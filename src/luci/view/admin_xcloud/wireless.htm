@@ -1,0 +1,181 @@
+<%
+	--检查无线连接状态
+	local uci = require "luci.model.uci".cursor()
+	local ntm = require "luci.model.network"
+	ntm.init(uci)
+
+	local devices  = ntm:get_wifidevs()
+	local devs
+	local netlist = {}
+
+	for _, dev in ipairs(devices) do local nets = dev:get_wifinets()
+		local nets = dev:get_wifinets()
+		for _, net in ipairs(nets) do
+			netlist[#netlist+1] = net:id()
+		end
+	end
+
+	local netmd = require "luci.model.network".init()
+	local net = netmd:get_wifinet(netlist[1])
+	local dev = net:get_device()
+
+	local wirestatus = false
+	--[[
+	if dev and net then
+		if net:get("disabled") and net:get("disabled") == 0 then
+			wirestatus = 0
+		else
+			wirestatus = 1
+		end
+	end]]--
+	if net:get('disabled') or net:get('disabled') == 1 then
+		wirestatus = false
+	else
+		wirestatus = true
+	end
+
+	-- SSID
+	local ssid = nil
+	ssid = net:get("ssid")
+
+	-- wiretype
+	local wiretype = nil
+	local nn = netmd:get_network("wan")
+	wiretype = nn:proto()
+
+	-- wirelessSafe
+	local wireSafe = false
+	local wireSafePwd = nil
+	if net:get("encryption") == "none" then
+		wireSafe = false
+	else
+		wireSafe = true
+		wireSafePwd = net:get("key")
+	end
+%>
+<div class='wireless_setup'>
+	<div class='setup_head'>
+		<h4>WiFi设置</h4>
+		<a class='setup_return' href='javascript:void(0)'><span class='setup_return_img'></span>&nbsp;返回</a>
+		<div class='clr'></div>
+		<div class='bottom_line'>
+		</div>
+	</div>
+
+	<div class='setup_wireless'>
+		<ul>
+			<li>
+				<span class='setwiretitle'>无线功能：</span>
+				<select class='setwireturn setType'>
+					<%if wirestatus then%>
+						<option value="close">关闭</option>
+						<option selected="selected" value="open">开启</option>
+					<%else%>
+						<option selected="selected" value="close">关闭</option>
+						<option value="open">开启</option>
+					<%end%>
+				</select>
+			</li>
+			<li>
+				<span class='setwiretitle'>无线网络名称SSID：</span><input class='netssid setwireturn_input' type='text' value='<%=ssid%>'>
+			</li>
+			<li>
+				<span class='setwiretitle'>无线加密：</span>
+				<select class='setwireturn wirelessSafe'>
+					<%if wireSafe then%>
+					<option value="none">关闭</option>
+					<option selected="selected" value="psk2">开启</option>
+					<%else%>
+					<option selected="selected" value="none">关闭</option>
+					<option value="psk2">开启</option>
+					<%end%>
+				</select>
+			</li>
+			<li>
+				<span class='setwiretitle'>无线密码：</span><input class='setwireturn_input wirelessPass' type='text' value='<%=wireSafePwd%>'>
+			</li>
+		</ul>
+		<a class='subbtn saveStatus' href='javascript:void(0)'><b>保存</b></a>
+		<span class='wireless_mention'></span>
+	</div>
+</div>
+<script type='text/javascript'>
+	function wiremention(word){
+		$('.wireless_mention').html(word).stop().animate({'opacity':1},1000,"",function(){
+			$('.wireless_mention').stop().animate({'opacity':0},3000);
+		});		
+	}
+
+	function c_gray(){
+		var v = $('.wirelessSafe').val();
+
+		if (v == "none"){
+			$('.wirelessPass').attr('disabled','disabled');
+			$('.wirelessPass').val('');
+		}else{
+			$('.wirelessPass').removeAttr('disabled');
+			//$('.wirelessPass').val('<%=wireSafePwd%>');
+		}
+
+		var v1 = $('.setType').val();
+		
+		if(v1 == 'close'){
+			$('.netssid').attr('disabled','disabled');
+		}else{
+			$('.netssid').removeAttr('disabled');
+		}
+	}
+
+	c_gray();
+
+	$('.wirelessSafe').change(function(){
+		c_gray();
+	})
+
+	$('.setType').change(function(){
+		c_gray();
+	})
+
+	$('.saveStatus').live('click',function(){
+		 var wirelesstype	= $('.wirelessSafe').val()
+		 var wirelesspwd	= $('.wirelessPass').val()
+		 
+		 if (wirelesstype == 'psk2' && wirelesspwd.length < 8){
+		 	//$('.wireless_mention').html('请输入8位及以上的密码').stop().fadeIn(600).fadeOut(5000)
+		 	wiremention('请输入8位及以上的密码');
+		 	return false;
+		 }
+
+		 var wirelessstatus = $('.setType').val()
+		 var wirelessssid	= $('.netssid').val()
+
+		 var wirelesscodetype	= $('.wirelessSafe').val()
+		 var wirelesscode 		= $('.wirelessPass').val()
+
+		 var o = {}
+		 o = {w_status:wirelessstatus,w_ssid:wirelessssid,w_type:wirelesstype,w_pwd:wirelesspwd,w_code_t:wirelesscodetype,w_code:wirelesscode}
+	//alert(wirelessssid);return;
+//alert(123123);
+		 $('.wireless_mention').html('保存中...').stop().animate({'opacity':1},1000);
+		 $.ajax({
+		 	url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/wiresetup"))%>',
+		 	method:'POST',
+		 	dataType:'json',
+		 	data:o,
+		 	timeout:30000,
+		 	success:function(json){
+				/*if (json.result == "success"){
+					$('.wireless_mention').html('已保存').stop().fadeIn(600).fadeOut(3000)
+				}else{
+					$('.wireless_mention').html('已保存').stop().fadeIn(600).fadeOut(3000)
+				}*/
+				$('.wireless_mention').html('已保存').stop().animate({'opacity':0},3000);
+				updatestatus();
+		 	},
+		 	error:function(){
+		 		$('.wireless_mention').html('已保存').stop().animate({'opacity':0},3000);
+		 		updatestatus();
+		 	}
+		 })
+	})
+</script>

@@ -1,0 +1,94 @@
+<%
+	local uci = require "luci.model.uci".cursor()
+	local mac = uci.get('network','lan','macaddr')
+	local ipaddr = uci.get('network','lan','ipaddr')
+	local netmask = uci.get('network','lan','netmask')
+
+	local show_lan_ip = uci.get('network','lan','ipaddr') or ''
+%>
+
+<div class='lansetuppart1'>
+	<h4>本页设置路由器的基本网络参数</h4>
+	<div class='lansetuppart1_info'>
+		<ul>
+			<li><span class='lansetuppart1_title'>MAC地址：</span><span><%=mac%></span></li>
+			<li><span class='lansetuppart1_title'>IP地址：</span><span><input class='lansetuppart1_input ipads' type='text' value='<%=ipaddr%>'></span></li>
+			<li><span class='lansetuppart1_title'>子网掩码：</span><span><input class='lansetuppart1_input netmask' type='text' value='<%=netmask%>'></span></li>
+		</ul>
+		<a href='javascript:void(0)' class='subbtn' id='lansetuppart1_save'><b>保存</b></a>
+		<span class='lansetuppart1_mention'></span>
+	</div>
+</div>
+
+<script type='text/javascript'>
+	function mentionLan(word,flag){
+		if (flag != 1){
+			//$('.lansetuppart1_mention').html(word).fadeIn(1000).fadeOut(3000);
+			$('.lansetuppart1_mention').html(word).stop().animate({'opacity':1},1000,"",function(){
+				$('.lansetuppart1_mention').stop().animate({'opacity':0},3000);
+			});			
+		}else{
+			$('.lansetuppart1_mention').css('display','block').html(word);
+		}
+		return false;
+	}
+
+	$('#lansetuppart1_save').live('click',function(){
+		var ipads = $('.ipads').val();
+		var netmask = $('.netmask').val();
+		var ipstd = '<%=show_lan_ip%>';
+
+		if (ipads == ""){
+			mentionLan('IP地址为空',0);
+			return false;
+		}
+
+		if (netmask == ""){
+			mentionLan('子网掩码为空',0);
+			return false;
+		} 
+
+		var exp=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
+
+		var reg = ipads.match(exp);
+		//alert(reg);
+		if(reg==null){
+			mentionLan('IP地址输入不正确',0);
+			return false;
+		}
+		reg = netmask.match(exp);
+		if(reg==null){
+			mentionLan('子网掩码输入不正确',0);
+			return false;
+		}
+
+		if (ipstd == ipads){
+			mentionLan('IP地址重复',0);
+			return false;
+		}
+		
+		mentionLan('正在保存...',1);
+		
+		$.ajax({
+			url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/lansetup1"))%>',
+			dataType:'json',
+			method:'post',
+			data:{ipaddr:ipads,net:netmask},
+			success:function(r){
+			}
+		})
+
+		if (ipstd != ipads){
+			var interval = window.setInterval(function() {
+				var img = new Image();
+
+				img.onload = function() {
+					window.clearInterval(interval);
+					location.href = 'http://'+ipads;
+				};
+
+				img.src = 'http://'+ipads+'<%=resource%>/icons/loading.gif?' + Math.random();
+			}, 46000);
+		}
+	})
+</script>

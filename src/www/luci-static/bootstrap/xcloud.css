@@ -1,0 +1,1812 @@
+@charset "utf-8";
+
+.lang_he {
+	direction: RTL;
+	unicode-bidi: embed;
+}
+
+@media all {
+
+html {
+	min-height: 100%;
+	height: auto;
+	position:relative;
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	font-family: "微软雅黑"
+}
+
+a{
+	text-decoration: none;
+}
+
+ul{
+	list-style-type: none;
+}
+
+.clr{
+	clear:both;
+}
+
+/*tinybox*/
+.tbox {position:absolute; display:none; padding:14px 17px; z-index:900}/*../images/preload.gif*/
+.tinner {padding:15px; -moz-border-radius:5px; border-radius:5px; background:#fff url() no-repeat 50% 50%; border-right:1px solid #333; border-bottom:1px solid #333}
+.tmask {position:absolute; display:none; top:0px; left:0px; height:100%; width:100%; background:#000; z-index:800}
+.tclose {position:absolute; top:0px; right:0px; width:30px; height:30px; cursor:pointer; background:url() no-repeat}/*images/close.png*/
+.tclose:hover {background-position:0 -30px}
+
+#error {  padding:0}
+#error .tcontent {-moz-border-radius:5px; border-radius:5px}
+#success {background:#2ea125; color:#fff; text-shadow:1px 1px #1b6116; border-right:1px solid #000; border-bottom:1px solid #000; padding:10; -moz-border-radius:0; border-radius:0}
+#bluemask {background:#4195aa}
+#frameless {padding:0}
+#frameless .tclose {left:6px}
+
+body{
+	background:#ededed;
+}
+
+h1{
+	font-size:18px;
+	font-weight:300;
+	color:#666;
+}
+
+h3{
+	font-size:16px;
+	font-weight:300;
+	color:#459ec7;
+}
+
+.mask{
+	width:380px;
+	height:215px;
+}
+
+.mask p{
+	padding-top:70px;
+	text-align: center;
+}
+
+.mask .maskbtn{
+	width:210px;
+	margin:35px auto 0px auto;
+}
+
+.nav{
+	height:63px;
+	background:url('title_box.jpg') repeat-x center;
+}
+
+.common{
+	width:940px;
+	margin:0 auto;
+}
+
+.nav .nav_head{
+	height:63px;
+	/*
+	-webkit-transform: scale(0.9);
+	-o-tranform:scale(0.9);
+	-moz-transform:scale(0.9);*/
+}
+
+.nav .nav_head .logo{
+	display:block;
+	float:left;
+	margin-top:15px;
+	width:105px;
+	height:30px;
+	background:url('logo.png') no-repeat center;
+}
+
+.nav .nav_head .version{
+	display:block;
+	float:left;
+	margin-top:27px;
+	font-size:14px;
+	color:#D4D3D1;
+}
+
+.nav .nav_head .prompt{
+	display:none;
+	float:right;
+	margin-top:25px;
+	width:19px;
+	height:19px;
+	background:url('prompt.png') no-repeat center;
+}
+
+.nav .nav_head .updatewords{
+	display:block;
+	color:#666;
+	font-size:14px;
+	float:right;
+	margin-left:8px;
+	margin-top:27px;
+}
+
+.nav .nav_head .getupdate{
+	display:block;
+	color:#F66F2F;
+	font-size:14px;
+	float:right;
+	margin-top:27px;
+	text-decoration: underline;
+}
+
+.nav .nav_head .getupdate:hover{
+	color:#FE8C8C;
+}
+
+.apps{
+	margin-top:8px;
+	/*
+	-webkit-transform: scale(0.9);
+	-o-tranform:scale(0.9);
+	-moz-transform:scale(0.9);*/
+}
+
+.apps .plugins{
+	overflow: hidden;
+	position: relative;
+	margin-top:8px;
+	height:178px;
+	width:940px;
+	background:url('apply_box.png') no-repeat;
+}
+
+.movebox{
+	display: block;
+	width:19px;
+	height:96px;	
+	position: absolute;
+	top:38px;
+	cursor: pointer;
+	z-index:2;
+}
+
+.leftmove{
+	background:url('left_button_not.png') no-repeat center;
+}
+
+.rightmove{
+	right:0px;
+	background:url('right_button.png') no-repeat center;
+}
+
+.rightmove:hover{
+	background:url('right_button_click.png') no-repeat center;
+}
+
+.apps .plugins .pluginsline{
+	position: absolute;
+	left:0px;
+	width:1880px;
+	z-index:1;
+}
+
+.ap{
+	display:block;
+	float:left;
+	width:126px;
+	height:114px;
+	margin-left:27px;
+	margin-top:30px;
+	text-align:center;
+	cursor:default;
+}
+
+.appplugins{
+	cursor: pointer;
+}
+
+.ap b{
+	display:block;
+	color:white;
+	font-weight:300;
+	font-size:14px;
+	padding-top:80px;
+}
+
+.xcloud{
+	cursor: pointer;
+	background:url('xcloud.jpg') no-repeat center;
+}
+
+.shut{
+	background:url('switch.jpg') no-repeat center;
+}
+
+.video{
+	background:url('monitoring.jpg') no-repeat center;
+}
+
+.netessdown{
+	background:url('download.jpg') no-repeat center;
+}
+
+.appfast{
+	background:url('expedite.jpg') no-repeat center;
+}
+
+.baidu{
+	background:url('baidu.jpg') no-repeat center;
+}
+
+.xunlei{
+	background:url('xunlei.jpg') no-repeat center;
+}
+
+.content{
+	margin-top:8px;
+	/*
+	-webkit-transform: scale(0.9);
+	-o-tranform:scale(0.9);
+	-moz-transform:scale(0.9);*/
+}
+
+.status{
+	float:left;
+}
+
+.status p{
+	font-size:14px;
+	color:#666;
+	margin-left:35px;
+	margin-top:4px;
+}
+
+.status p span{
+	display: inline-block;
+	width:120px;
+}
+
+.status_c{
+	margin-top:8px;
+	margin-bottom:16px;
+	width:318px;
+	height:466px;
+	background:url('state_box.png') no-repeat center;
+}
+
+.status_c h3{
+	margin-left:18px;
+	padding-top:7px;
+}
+
+.status_btn{
+	display: block;
+	position:relative;
+	float:right;
+	margin-right:15px;
+	width:17px;
+	height:17px;
+}
+
+.pop_tag{
+	display:none;
+	margin-top:20px;
+	width:46px;
+	height:34px;
+	background:url('pop_up.png') no-repeat center;
+	text-align: center;
+}
+
+.status_c .pop_tag span{
+	display:block;
+	padding-top:12px;
+	width:46px;
+	color:#666;
+	font-size:14px;
+}
+
+.firmware{
+	height:68px;
+}
+
+.firmware a{
+	background:url('upgrade.png') no-repeat center;
+}
+
+.firmware a:hover{
+	background:url('click_upgrade.png') no-repeat center;
+}
+
+.firmware1{
+	display: none;
+}
+
+.wifi{
+	height:108px;
+}
+
+.wifi a{
+	background:url('allocation.png') no-repeat center;
+}
+
+.wifi a:hover{
+	background:url('click_allocation.png') no-repeat center;
+}
+
+.lan{
+	height:130px;
+}
+
+.lan a{
+	background:url('allocation.png') no-repeat center;
+}
+
+.lan a:hover{
+	background:url('click_allocation.png') no-repeat center;
+}
+
+.wifinfo{
+	height:85px;
+}
+
+.wifinfo a{
+	background:url('allocation.png') no-repeat center;
+}
+
+.wifinfo a:hover{
+	background:url('click_allocation.png') no-repeat center;
+}
+
+.usbinfo{
+	height:90px;
+}
+
+.usbinfo a{
+	background:url('pull_out.png') no-repeat center;
+}
+
+.usbinfo a:hover{
+	background:url('click_pull_out.png') no-repeat center;
+}
+
+.setup{
+	width:605px;
+	float:right;
+}
+
+.setup h1{
+}
+
+.setup_c{
+	margin-top:8px;
+	width:605px;
+	height:466px;
+	background:url('allocation_box.png') no-repeat center;
+	font-size: 14px;
+}
+
+.setup_c .setup_c_content{
+	width:605px;
+	height:588px;
+	margin:0px auto;
+	padding-top:12px;
+	padding-left:12px;
+}
+
+.setup_c .setup_c_content a{
+	display:block;
+	float:left;
+	width:115px;
+	height:98px;
+	border-bottom:1px solid #DFDFDF;
+	border-right:1px solid #DFDFDF;
+	margin-right:0px;
+	cursor:pointer;
+	text-align:center;
+	color:#666;
+}
+
+.setup_c .setup_c_content a:hover{
+	background:#e8e8e8;
+}
+
+.setup_c .setup_c_content a p{
+	font-size: 14px;
+	margin-top:10px;
+}
+
+.setup_c .setup_c_content a span{
+	display:block;
+	width:58px;
+	height:38px;
+	margin:10px auto 0px auto;
+}
+
+.app_opt span{
+	background:url('app.png') no-repeat center;
+}
+
+.fast_set span{
+	background:url('set.png') no-repeat center;
+}
+
+.adv_set span{
+	background:url('senior.png') no-repeat center;
+}
+
+.usb_opt span{
+	background:url('usb.png') no-repeat center;
+}
+
+.file_view span{
+	background:url('file.png') no-repeat center;
+}
+
+.upgrade span{
+	background:url('firmware.png') no-repeat center;
+}
+
+.wdsopt span{
+	background:url('wxzj.png') no-repeat center;
+}
+
+.setup_c_content .app_opt,.wdsopt{
+	border-left:1px solid #DFDFDF;
+}
+
+.setup_c_content #appsetup,#fast_set,#adv_set,#usbinfo,#fileview{
+	border-top:1px solid #DFDFDF;
+}
+
+.setup_head{
+	position:relative;
+	height:42px;
+	border-bottom:1px solid #D4D4D4;
+}
+
+.setup_head h4{
+	float:left;
+	color:#666;
+	font-weight:300;
+	margin-left:24px;
+	margin-top:10px;
+}
+
+.setup_head .setup_return{
+	display:block;
+	float:right;
+	margin-right:24px;
+	margin-top:10px;
+	color:#F66F2D;
+}
+
+.setup_head .setup_return_img{
+	display:inline-block;
+	width:13px;
+	height:13px;
+	background:url('return.png') no-repeat center;
+}
+
+.setup_head .bottom_line{
+	position: absolute;
+	width:87px;
+	height:3px;
+	background:#3CB6FF;
+	top:40px;
+	left:10px;
+}
+
+.setup_wifi{
+	margin-top:21px;
+	margin-left:25px;
+}
+
+.setup_wifi ul li{
+	width:350px;
+	color:#666;
+	margin-bottom:10px;
+}
+
+.setup_left{
+	display:block;
+	float:left;
+}
+
+.setup_right{
+	display:block;
+	float:right;
+}
+
+.wify_long{
+	width:205px;
+}
+
+.dial{
+	display: block;
+	float:right;
+	width:66px;
+	height:26px;
+	margin-right:230px;
+	text-align: center;
+	background: url('button1.png') no-repeat center;
+}
+
+.dial:hover{
+	background: url('click_button1.png') no-repeat center;	
+}
+
+.dial b{
+	display:block;
+	padding-top:2px;
+	color:white;
+	font-weight:300;
+}
+
+.navigation{
+	width:940px;
+	height:50px;
+	margin:54px auto;
+	background:url('fast_box.png') no-repeat center;
+}
+
+.navigation .navigation_title{
+	color:#666;
+	padding-top:15px;
+	padding-left:17px;
+}
+
+.navigation .navigation_title a{
+	color:#666;
+}
+
+.app_xcloud_content{
+	width:940px;
+	height:324px;
+	margin:0 auto 100px auto;
+	background:url('xcloud_box.png') no-repeat center;
+}
+
+.app_xcloud_input{
+	width:268px;
+	height:175px;
+	float:left;
+	margin-left:86px;
+	margin-top:50px;
+	color:#666;
+}
+
+.app_xcloud_input h3{
+	text-align: center;
+	color:#666;
+	font-size:16px;
+}
+
+.app_xcloud_input div{
+	font-size:13px;
+}
+
+.app_xcloud_input div a{
+ 	color:#f66f2f;
+	text-decoration: underline;
+}
+
+.app_xcloud_mention{
+	width:262px;
+	height:18px;
+	margin-top:5px;
+	margin-bottom:5px;
+	text-align: center;
+	color:#F04D4E;
+}
+
+.app_xcloud_mention p{
+	background: #FDEDEB;
+}
+
+.app_xc_input{
+	display:inline-block;
+	margin-top:24px;
+	width:205px;
+}
+
+.login{
+	display:block;
+	width:262px;
+	height:30px;
+	background:#39B6F6;
+	text-align: center;
+	text-decoration: none;
+	color:white;
+	float:left;
+}
+
+.login b{
+	display: block;
+	padding-top:4px;
+}
+
+.app_xcloud_2wei{
+	float:right;
+	width:390px;
+	text-align:left;
+	font-size:14px;
+	color:#666;
+	margin-top:62px;
+	margin-right:50px;
+}
+
+.app_xcloud_2wei img{
+	width:102px;
+	margin-left:120px;
+}
+
+.app_xcloud_2wei .l_xcloud{
+	text-decoration: underline;
+	color:#f66f2f;
+}
+
+.app_xcloud_2wei .l_xcloud:hover{
+	color:#fe8c8c;
+}
+
+.app_xcloud_logout{
+	float:left;
+	margin-left:94px;
+	margin-top:85px;
+	color:#666;
+}
+
+.app_xcloud_logout_panel{
+	margin-top:24px;
+}
+
+.loginout{
+	display:inline-block;
+	text-align:center;
+	margin-left:34px;
+	width:66px;
+	height:26px;
+	color:white;
+	background:url('cancel.png') no-repeat center;
+}
+
+.loginout:hover{
+	background:url('cilck_cancel.png') no-repeat center;
+}
+
+.loginout b{
+	display:block;
+	font-weight: 300;
+	padding-top:2px;
+}
+
+.app_xcloud_logout_mention{
+	width:275px;
+	font-size:15px;
+	margin-top:50px;
+}
+
+.setup_wireless{
+	width:400px;
+}
+
+.setup_wireless ul li{
+	color:#666;
+	margin-top:12px;
+	margin-left:25px;
+}
+
+.setwiretitle{
+	display:inline-block;
+	width:165px;
+}
+
+.setwireturn_input{
+	margin-left:5px;
+	width:200px;
+}
+
+.setwireturn{
+	width:205px;
+}
+
+.wireless_mention{
+	display:block;
+	float:right;
+	color:#666;
+	margin-right:80px;
+	margin-top:25px;
+}
+
+.subbtn{
+	display:block;
+	float: right;
+	margin-top:22px;
+	width:66px;
+	height:26px;
+	background:url('button1.png') no-repeat center;
+	text-align: center;
+}
+
+.subbtn:hover{
+	background:url('click_button1.png') no-repeat center;
+}
+
+.subbtn b{
+	display:block;
+	color:white;
+	padding-top:3px;
+	font-weight: 300;
+}
+
+.subbtn1{
+	display:block;
+	float: right;
+	margin-top:22px;
+	width:66px;
+	height:26px;
+	background:url('button2.png') no-repeat center;
+	text-align: center;
+}
+
+.subbtn1:hover{
+	background:url('button2_click.png') no-repeat center;
+}
+
+.subbtn1 b{
+	display:block;
+	color:#666;
+	padding-top:3px;
+	font-weight: 300;
+}
+
+.usb_setupnew{
+	height: 420px;
+}
+
+.usb_setupnew .usb_devadd{
+	margin-left:2px;
+	width:601px;
+	height:53px;
+	background:#EFEFEF;
+}
+
+.ndevhasopt{
+	display: none;
+	float:left;
+	margin-top:14px;
+	margin-left:72px;
+	color:#666;
+}
+
+.ndevremoving{
+	display: none;
+	float:left;
+	margin-top:14px;
+	margin-left:72px;
+	color:#666;
+}
+
+.ndevremovefailed{
+	display: none;
+	float:left;
+	margin-top:13px;
+	margin-left:32px;
+	color:#666;
+}
+
+.ndevremove{
+	display:none;
+	float:left;
+	margin-left:32px;
+	margin-top:13px;
+}
+
+.usb_setupnew .usb_devadd h4{
+	float: left;
+	color: #666;
+	font-weight: 300;
+	margin-left: 24px;
+	margin-top: 15px;
+}
+
+.usb_devcontent{
+	height:307px;
+	overflow:auto;
+}
+
+.usb_devcontent .usb_devopt{
+	width:95%;
+	margin:0px auto 0px auto;
+	color:#666;
+	padding-top:19px;
+}
+
+.usb_devcontent .usb_devopt tr th{
+	font-weight:300;
+	padding-bottom:6px;
+	border-bottom:1px solid #DFDFDF;
+}
+
+.usb_devcontent .usb_devopt tr td{
+	width:33%;
+	text-align: center;
+	height:37px;
+	border-bottom:1px solid #DFDFDF;
+}
+
+.usb_devcontent .usb_devopt tr td span{
+	background: none;
+	display:block;
+	float:right;
+	margin-right:10px;
+}
+
+.usb_devfooter{
+	height:60px;
+}
+
+.usb_devfooter p{
+	width:410px;
+	margin:0px auto;
+	padding-top:20px;
+	color:#666;
+}
+
+.usb_setup{
+	height:487px;
+	padding:40px 10px;
+}
+
+.usb_setup .no_usb_support{
+	color:#666;
+	width:135px;
+	margin:150px auto;
+}
+
+.usb_setup .usb_table{
+	width:585px;
+	color:#666;
+}
+
+.usb_setup .usb_table tr th{
+	font-weight:700;
+	border-top:1px solid #CDCDCB;
+	border-left:1px solid #CDCDCB;
+	background: #E6E6E6;
+	height:51px;
+}
+
+.usb_setup .usb_table tr td{
+	text-align: center;
+	height:51px;
+	border-top:1px solid #CDCDCB;
+	border-left:1px solid #CDCDCB;
+	border-bottom:1px solid #CDCDCB;	
+}
+
+.mask{
+	width:380px;
+	height:215px;
+}
+
+#hasmnt{
+	background: none;
+}
+
+.mnt_dev{
+	color:#F5702F;
+	text-decoration: underline;
+}
+
+.firmware_setup{
+	font-size: 14px;
+	width:652px;
+	height:565px;
+}
+
+.lan_setup{
+	width:603px;
+	height:566px;
+}
+
+.lan_setup_content{
+	height:380px;
+}
+
+.lansetuppart1{
+	margin-left:25px;
+	padding-top:15px;
+}
+
+.lansetuppart1 h4{
+	color:#666;
+	font-weight:300;
+}
+
+.lansetuppart1_info{
+	width:318px;
+	color:#666;
+}
+
+.lansetuppart1_info ul {
+	line-height: 43px;
+}
+
+.lansetuppart1_input{
+	width:198px;
+	height:22px;
+	padding:5px;
+}
+
+.lansetuppart1_title{
+	display: inline-block;
+	width:105px;
+}
+
+.lansetuppart1_mention{
+	display: block;
+	float:right;
+	margin-top:25px;
+	width:205px;
+}
+
+#lansetuppart1_save{
+	margin-top:23px;
+}
+
+.lansetuppart2{
+
+}
+
+.lansetuppart2_title{
+	margin-left:25px;
+	padding-top:11px;
+	color:#666;
+}
+
+
+.lansetuppart2_title .dhcpserv{
+	margin-left:50px;
+	cursor: pointer;
+}
+
+.lan_setup_footer{
+}
+
+.lan_setup_footer p{
+	padding-top:8px;
+	text-align: center;
+	color:#666;
+}
+
+.lan_setup_footer .lan_setup_lan{
+	float:left;
+	width:101px;
+	height:39px;
+	border-right:1px solid #CECECE;
+	background: none;
+	cursor: pointer;
+}
+
+.lan_setup_footer .lan_setup_dhcp{
+	float:left;
+	width:101px;
+	height:39px;
+	border-right:1px solid #CECECE;
+	border-top:1px solid #CECECE;
+	background: #EEE;
+	cursor: pointer;
+}
+
+.lan_setup_footer .lan_setup_default{
+	float:left;
+	width:399px;
+	height:39px;
+	border-top:1px solid #CECECE;
+	background: #EEE;
+}
+
+.foredit{
+	height: 30px;
+	margin-left:25px;
+	margin-bottom:10px;
+}
+
+.lan_type{
+	width:330px;
+	height:100px;
+	margin-left:25px;
+	margin-top:31px;
+}
+
+.lan_static_setup{
+	margin-left:15px;
+	width:575px;
+	height: 212px;
+	overflow: auto;
+}
+
+.lan_type_title{
+	display:block;
+	float:left;
+	color:#666;
+}
+
+.lan_edit{
+	display: block;
+	float:right;
+	cursor: pointer;
+	width:74px;
+	height:30px;
+	margin-right:37px;
+	background: url('button2.png') no-repeat center;
+	text-align: center;
+}
+
+.lan_edit:hover{
+	background: url('click_button2.png') no-repeat center;	
+}
+
+.lan_edit b{
+	display: block;
+	color:#666;
+	padding-top:3px;
+	font-weight: 300;
+}
+
+.lan_type_list{
+	display:block;
+	float:right;
+	width:160px;
+}
+
+.lan_static_dev{
+	width:575px;
+}
+
+.lan_static_dev tr th{
+	background: #45A0CC;
+	color:white;
+	font-weight:300;
+	width:187px;
+	height:34px;
+	border-right:2px solid white;
+}
+
+.lan_static_dev tr td{
+	text-align: center;
+	background:#F1F1F1;
+	border-right:2px solid white;
+	border-top:2px solid white;
+	height:34px;
+	color:#666;
+}
+
+.static_name{
+	background: none;
+	border:none;
+	text-align: center;
+	width:90%;
+}
+
+.static_ip{
+	background: none;
+	border:none;
+	text-align: center;
+	width:90%;
+}
+
+.macadds{
+	display: none;
+	width:90%;
+}
+
+.lan_static_dev .delete{
+	display: none;
+	background: none;
+}
+
+.lan_static_dev .delete span{
+	display: block;
+	cursor:pointer;
+	width:13px;
+	height:13px;
+	padding-top:20px;
+	margin:0px auto;
+	background: url('delete.png') no-repeat center;
+}
+
+.addstatic{
+	display: none;
+	margin-left:30px;
+	margin-top:10px;
+}
+
+.addimg{
+	display: inline-block;
+	width:14px;
+	height:14px;
+	background: url('add.png') no-repeat center;
+	vertical-align:middle;
+}
+
+.addword{
+	text-decoration: underline;
+	color:#F76D2C;
+	margin-left:5px;
+	vertical-align:middle;
+}
+
+.savestatic{
+	display: none;
+	float:right;
+	width:74px;
+	height:30px;
+	margin-top:15px;
+	margin-right:31px;
+	background: url('button1.png') no-repeat center;
+	text-align: center;
+}
+
+.savestatic:hover{
+	background: url('button1_click.png') no-repeat center;
+}
+
+.savestatic b{
+	display:block;
+	color:white;
+	padding-top:3px;
+	font-weight: 300;
+}
+
+.addnode{
+	display: none;
+}
+
+.ads_default{
+	display: none;
+}
+
+.ads_default_mac{
+	width:88%;
+}
+
+.lansetuppart2_mention{
+	display: block;
+	float:right;
+	margin-top:17px;
+	width:205px;
+	color:#666;
+}
+
+/*小云应用*/
+.app_setup{
+	width:603px;
+	height:565px;
+}
+
+.app_list{
+	width:603px;
+	height:380px;
+	margin:0 auto;
+	color:#666;
+}
+
+.app_list ul li{
+	border-bottom:1px solid #DFDFDF;
+	padding-top:12px;
+	padding-bottom:6px;
+}
+
+.app_part{
+	width:603px;
+	height:240px;
+	overflow: auto;
+}
+
+.appstore{
+	border-top:1px solid #DFDFDF;
+	margin-top:20px;
+	height:76px;
+}
+
+.appstore h4{
+	width:100px;
+	float:left;
+	font-weight: 300;
+	margin-left:17px;
+	margin-top:15px;
+	margin-bottom:10px;
+}
+
+.appstore p{
+	margin-left:17px;
+	font-size:14px;
+	margin-top:8px;
+}
+
+.appstore .installplug{
+	margin-left:17px;
+	padding-top:5px;
+	width:150px;
+	display: block;
+	float:left;
+}
+
+.appstore .hands{
+	float:left;
+	margin-top:12px;
+}
+
+.appstore .installresult{
+	display: block;
+	float:left;
+	font-size:14px;
+	margin-left:10px;
+	padding-top:13px;
+	width: 100px;
+}
+
+.appstore .installresult b{
+	font-weight:300;
+	display: none;
+}
+
+.appstore .appstorespace{
+	margin-left:34px;
+	color:#F66F2D;
+}
+
+#upload_plugins{
+	margin-top: 10px;
+	width:170px;
+	float:left;
+}
+
+.appinstall{
+}
+
+.app_footer{
+	
+}
+
+.app_opt_img{
+	display: block;
+	float:left;
+	width:18px;
+	height:18px;
+	margin-left:10px;
+}
+
+.app_opt_title{
+	display:block;
+	float:left;
+	margin-left:10px;
+	width:180px;
+}
+
+.app_opt_size{
+}
+
+.app_opt_btn{
+	display: block;
+	float: right;
+	width:180px;
+	margin-top:-5px;
+}
+
+.appsetupmention{
+	width:96px;
+	height:21px;
+	margin:150px auto 0px auto;
+}
+
+.app_opt_btn_left{
+	display:block;
+	float:left;
+	width:66px;
+	height:26px;
+	background:url('button1.png') no-repeat center;
+	text-align: center;
+}
+
+.app_opt_btn_left b{
+	display: block;
+	padding-top:2px;
+	font-weight: 300;
+	color:white;
+}
+
+.appbtn{
+	float:right;
+	margin-top:0px;
+	margin-right:30px;
+}
+
+.appstr{
+	display: block;
+	float:right;
+	margin-top:0px;
+	margin-right:18px;
+	width:74px;
+	height:30px;	
+}
+
+.appstr1{
+	display: block;
+	float:left;
+	margin-top:0px;
+	margin-right:18px;
+	width:74px;
+	height:30px;
+}
+
+.installing{
+	display: none;
+}
+
+.uninstalling{
+	display: none;
+}
+
+.updating{
+	display: none;
+}
+
+.app_opt_btn_left:hover{
+	background:url('click_button1.png') no-repeat center;
+}
+
+.app_opt_btn_right{
+	display:block;
+	float:right;
+	margin-right:10px;
+	width:66px;
+	height:26px;
+	background:url('cancel.png') no-repeat center;
+	text-align: center;
+}
+
+.app_opt_btn_right b{
+	display: block;
+	padding-top:2px;
+	font-weight: 300;
+	color:white;
+}
+
+.app_opt_btn_right:hover{
+	background:url('cilck_cancel.png') no-repeat center;
+}
+
+.usb_obt_n{
+	display:none;
+}
+
+.usb_obt_n b{
+	font-size:12px;
+	padding-top:5px;
+}
+
+/*固件升级*/
+.check_firmware{
+	width:260px;
+	margin-left:10px;
+	margin-top:41px;
+}
+
+.check_firmware span{
+	display: block;
+	float:left;
+	color:#666;
+}
+
+.check_firmware a{
+	display: block;
+	float:right;
+	text-decoration: underline;
+	color:#F66F2D;
+}
+
+.firmware_newast{
+	display:none;
+	width:271px;
+	height:33px;
+	background: url('prompt_background_1.png') no-repeat center;
+	text-align: center;
+}
+
+.firmware_newast p{
+	padding-top: 5px;
+	color:#666;
+}
+
+.firmware_panel{
+	margin-left:10px;
+	margin-top:42px;
+	color:#666;
+}
+
+.firmware_panel h4{
+	font-weight:300;
+	float:left;
+	width:240px;
+}
+
+#upload_firmware{
+	float:left;
+	width:200px;
+	margin-left:10px;
+}
+
+.firmware_input{
+	width:193px;
+}
+
+.firmwarebtn{
+	display: block;
+	float:left;
+	text-align: center;
+	width:66px;
+	height:26px;
+	background: url('button1.png') no-repeat center;
+}
+
+.firmwarebtn:hover{
+	background: url('click_button1.png') no-repeat center;	
+}
+
+.firmwarebtn b{
+	display: block;
+	padding-top:3px;
+	font-weight: 300;
+	color:white;
+}
+
+.firmware_mention{
+	display:block;
+	float:left;
+	font-size:12px;
+	margin-left:3px;
+	margin-top:4px;
+}
+
+.firmware_uploading{
+	display: none;
+}
+
+.firmware_uploading p{
+	width:500px;
+	margin:100px auto;
+	color:#666;
+}
+
+/*fileview*/
+.unview{
+	width:409px;
+	height:33px;
+	background: url('prompt_background_2.png') no-repeat center;
+	text-align: center;
+	margin:165px auto;
+}
+
+.unview p{
+	padding-top:5px;
+	color:#666;
+}
+
+.fileList_nav{
+	width:601px;
+	margin:0px auto;
+	padding-top:23px;
+	padding-bottom:7px;
+	border-bottom:1px solid #DFDFDF;
+}
+
+.fileList_nav .root_dir{
+	display:block;
+	float:left;
+	background: none;
+	color:#666;
+	margin-left:15px;
+}
+
+.fileList_nav .last_step{
+	display: none;
+	float: right;
+	background: none;
+	color:#666;
+	cursor: pointer;
+}
+
+.fileList_devName{
+	width:601px;
+	margin-left:2px;
+	height:24px;
+	background: #F3F3F3;
+	text-align: center;
+}
+
+.fileList_devName p{
+	color:#666;
+}
+
+.fileList_contents{
+	width:601px;
+	height:280px;
+	margin:0px auto;
+	overflow: auto;
+}
+
+.fileList_contents ul li{
+	padding-top:10px;
+	padding-bottom: 10px;
+	padding-left:20px;
+	border-bottom: 1px solid #DFDFDF;
+
+}
+
+.fileList_contents ul li a{
+	color:#666;
+}
+
+.fileList_contents .folder{
+	display:inline-block;
+	vertical-align: bottom;
+	width:24px;
+	height:20px;
+	background: url('folder.png') no-repeat center;
+}
+
+.fileList_contents .notfolder{
+	display:inline-block;
+	vertical-align: bottom;
+	width:24px;
+	height:20px;
+	background: url('document.png') no-repeat center;
+}
+
+.fileList_contents .fordownload_file{
+	display: none;
+	float: right;
+	width:74px;
+	height:30px;
+	margin-top:-3px;
+	margin-right: 15px;
+	background: url('button1.png') no-repeat center;
+	text-align: center;
+	cursor: pointer;
+}
+
+.fileList_contents .fordownload_file:hover{
+	background: url('click_button1.png') no-repeat center;
+}
+
+.fileList_contents .fordownload_file b{
+	display: block;
+	font-weight: 300;
+	padding-top:3px;
+	color:white;
+}
+
+.fileList_contents .filemention{
+	display: none;
+	float:right;
+	background: none;
+	color:#F66F2D;
+	margin-right:10px;
+}
+
+/* fastsetup */
+.fast_setup{
+	width:940px;
+	margin:0px auto;
+	font-size:14px;
+}
+
+.fast_box{
+	width:461px;
+	height:270px;
+	background: url('network_box.png') no-repeat center;
+}
+
+.wansetup{
+	float:left;
+}
+
+.fast_setup .setup_head .setup_return{
+	display: none;
+}
+
+.wansetup .setup_wifi .dial{
+	margin-right:86px;
+}
+
+.wifisetup{
+	float: right;
+}
+
+.lansetup{
+	width:760px;
+	height:614px;
+	margin-top:63px;
+	background: url('intranet_box.png') no-repeat center;
+}
+
+.lansetup .lan_setup_content{
+
+}
+
+.lansetup .lan_setup_footer{
+	width:759px;
+}
+
+.lansetup .lan_setup_default{
+	width:513px;
+}
+
+.fastlan{
+	width:461px;
+	height:270px;
+	background: url('network_box.png') no-repeat center;
+}
+
+/*******wds******/
+.wdsoptmain{
+	width:603px;
+	height:420px;
+}
+
+.wdsoptcontent{
+	padding-top:19px;
+	width:360px;
+	height:380px;
+	margin:0px auto 10px auto;
+}
+
+.wdsoptcontent ul li{
+	width:350px;
+	height:30px;
+	color:#666;
+	margin-bottom:9px;
+	margin-top:9px;
+}
+
+.wdsoptcontent .wdsopt_left{
+	display: block;
+	float:left;
+	margin-top:4px;
+	width:130px;
+	height:20px;
+	text-align: right;
+	background: none;
+}
+
+.wdsoptcontent .wdsopt_right{
+	display: block;
+	float: right;
+	width:206px;
+	height:26px;
+}
+
+.wdsoptcontent .wdsopt_input{
+	width:201px;
+	padding-left:5px;
+	border:none;
+	background: url('input_box3.png') no-repeat center;
+}
+
+.wdsoptcontent .wdsoptselect{
+}
+
+.wdsoptbegin{
+	margin-top:0px;
+	margin-right:140px;
+}
+
+.wdsdhcp{
+	padding-top:5px;
+}
+
+.wdsdhcpradio{
+	cursor: pointer;
+}
+
+.wdsave{
+	margin-top:0px;
+}
+
+.wdsoptmain .wdsoptcontent .wdsoptsm{
+	width:336px;
+}
+
+.wdslistPanel{
+	color:#666;
+}
+
+.wdslisttitle{
+	padding-top:20px;
+	padding-bottom:15px;
+}
+
+.wdslistPanel h4{
+	font-weight:300;
+	margin-left:20px;
+}
+
+.wdslistPanel p{
+	margin-left:20px;
+	margin-top:15px;
+}
+
+.wdslisttb{
+	margin-left:2px;
+	width:601px;
+}
+
+.wdslisttb tr th{
+	height:39px;
+	background: #45A0CC;
+	font-weight: 300;
+	color:white;
+}
+
+.wdstb{
+	height:285px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.wdslisttb tr td{
+	text-align: center;
+	padding-top:10px;
+	padding-bottom: 10px;
+	white-space:nowrap;
+	overflow:hidden;
+}
+
+.wdslisttb .even{
+	background: #F3F3F3;
+}
+
+.wdsconect{
+	color:#F77B45;
+	text-decoration: underline;
+}
+
+.wdsreturn{
+	display: block;
+	float: right;
+	margin-right: 24px;
+	margin-top: 10px;
+	color: #F66F2D;	
+}
+
+.wdsstart_mention{
+	display: block;
+	float:left;
+	font-size:12px;
+	width:255px;
+	color:#FF0000;
+	text-align: center;
+}
+
+.wdsturn{
+	cursor:pointer;
+}
+
+.wdsopt_turn{
+	padding-top:5px;
+}
+
+.wdstop{
+	margin-top:0px;
+	margin-right:93px;
+}
+
+.wdsoptcontent .wdsoptturn{
+	width:256px;
+}
+
+.wdstop_mention{
+	width:90px;
+}

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="format-detection" content="telephone=no" />
+<title>HiWiFi 路由器</title>
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/style.css?v=1015" type="text/css"/>
+<script type="text/JavaScript" src="<%=resource%>/turbo/web/js/curvycorners.src.js"></script><!-- 圆角兼容 -->
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery-1.8.1.min.js"></script>
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/artDialog/jquery.artDialog.js?skin=blueskin"></script>
+<script src="<%=resource%>/turbo/web/js/artDialog/plugins/iframeTools.source.js"></script>
+</head>
+
+<style type="text/css">
+	table.zone td.tor{
+		text-align: right;
+		width:120px;
+		line-height:14px;
+	}
+</style>
+<body>
+
+<div >
+	<form id="form1"> 
+	
+	<ul class="ullist">
+	<li>
+		<div class="memu row">
+			<span style="padding-right:30px;color: #999;">开关</span><span class="on-off"><button type="button" class="off">开关</button><img style="display:none;" id="loading3" src="<%=resource%>/turbo/web/js/artDialog/skins/icons/loading.gif"/></span>
+			<p class="item-txt"></p>
+		</div>
+	</li>
+	<li class="ipt_from" style="display:none;">
+		<div class="memu row">
+			<p><label>服务器地址</label><input type="text" name="server" id="" class="txt" value=""/></p>
+			<p><label>用户名</label><input type="text" name="username" id="" class="txt" value=""/></p>
+			<p><label>密码</label><input type="text" name="password" id="" class="txt" value=""/></p>
+			<p><label>状态: <span id="con_stauts">未连通</span> <a href="javascript:window.location.reload();">刷新</a></label></p>
+		</div>
+	</li>
+	<li  class="ipt_from" style="display:none;">
+		<div class="btnbox">
+			<input type="button" value="保存" class="btn" id="submit_btn" />
+			<img style="display:none;" id="loading2" src="<%=resource%>/turbo/web/js/artDialog/skins/icons/loading.gif" alt="HiWiFi 路由器" />
+		</div>
+	</li>
+	</ul>
+	</form>
+</div>
+<script type="text/javascript">
+
+$(function(){
+	//$.ajaxSettings.async = false;
+	//network/get_lan_info 
+
+	//network/get_l2tp_vpn 
+	var request_date = {}; 
+	$.getJSON("/cgi-bin/turbo/;stok=c8e8b5f039d8c34871f5d1f406716066/api/network/get_l2tp_vpn",request_date,function(rsp) 
+	{ 
+		$("#submit_btn").attr("disabled",false);
+	 	if (rsp.code == 0){
+	 		$("input[name='username']").val(rsp.username);  
+			$("input[name='password']").val(rsp.password); 
+			$("input[name='server']").val(rsp.server);  
+			$("input[name='defaultroute']").val(rsp.defaultroute);  
+			var switch_b = $(".on-off").children("button");
+			
+			if(rsp.switch == 1){
+				switch_b.addClass("on");
+				switch_b.removeClass("off");
+				$(".ipt_from").show();
+			} else {
+				switch_b.addClass("off");
+				switch_b.removeClass("on");
+				$(".ipt_from").hide();
+			}
+			
+			if(rsp.status == 1){
+				$("#con_stauts").html("已连通.");
+			}
+	 	}
+	})
+	
+	
+	//关闭
+	//开关
+	$(".on-off").click(function(){
+		var switch_b = $(this).children("button");
+		var status_now = switch_b.attr("class");
+		if(status_now == "on"){
+			swicth_act("off");
+		} else if (status_now == "off"){
+			swicth_act("on");
+		}
+	});
+	
+	function swicth_act(act){
+		if(act == "off"){
+			$.getJSON("/cgi-bin/turbo/;stok=c8e8b5f039d8c34871f5d1f406716066/api/network/shutdown_l2tp_vpn",{},function(rsp) 
+			{ 
+				if(rsp.code == 0){
+					art.dialog({icon:"succeed",title:false,content:"设置成功!"}).lock().time(4);
+				} else {
+					art.dialog({icon:"error",title:false,content:rsp.msg}).lock().time(4);
+				}
+			})
+			setTimeout("window.location.reload();",1000);
+		}  else {
+			var switch_b = $(".on-off").children("button");
+			switch_b.addClass("on");
+			switch_b.removeClass("off");
+			$(".ipt_from").show();
+		}
+	}
+	
+	//提交
+	$("#submit_btn").click(function(){
+		
+		$("#loading2").show();
+		$("#submit_btn").attr("disabled",true);
+		
+		//network/set_l2tp_vpn 
+		var request_date =  $("#form1").serializeArray(); 
+		$.getJSON("/cgi-bin/turbo/;stok=c8e8b5f039d8c34871f5d1f406716066/api/network/set_l2tp_vpn",request_date,function(rsp) 
+		{ 
+			
+			if(rsp.code == 0){
+				art.dialog({icon:"succeed",title:false,content:"设置成功!"}).lock().time(4);
+			} else {
+				art.dialog({icon:"error",title:false,content:rsp.msg}).lock().time(4);
+			}
+			
+			$("#loading2").hide();
+			$("#submit_btn").attr("disabled",false);
+		})
+	})
+})
+
+</script>
+</body>
+</html>
+

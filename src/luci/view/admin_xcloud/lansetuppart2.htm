@@ -1,0 +1,137 @@
+<%
+	--dhcp服务开放状态
+	local uci = require "luci.model.uci".cursor()
+
+	local flag = uci.get('dhcp','lan','ignore')
+
+
+
+	-- 静态地址配置
+	-- mac默认地址
+	require "luci.sys"
+	local arptable = luci.sys.net.arptable() or {}
+	local mac={}
+	for _,v in pairs (arptable) do
+		table.insert(mac,v["HW address"])
+	end
+
+	-- 获取静态地址列表
+	local uci = require "luci.model.uci".cursor()
+
+	local dhcpdevs = {}
+
+	function checkads(s)
+		table.insert(dhcpdevs,s)
+	end
+
+	local show_lan_ip = uci.get('network','lan','ipaddr') or '自动'
+
+	uci:foreach("dhcp","host",checkads)
+%>
+
+<script type='text/javascript'>
+	var data = "";
+	XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "network", "dhcplease_status")%>', null,function(x,st){
+			data = st[0];
+	})
+</script>
+<div class='lansetuppart2'>
+	<div class='lansetuppart2_title'>
+		<span>DHCP服务</span>
+		<% if flag == '1' then%>
+			<input type='radio' class='dhcpserv' id='startdhcp' name='aaa' value='start'>&nbsp;开启
+			<input type='radio' class='dhcpserv' id='stopdhcp' name='aaa' value='stop' checked='checked'>&nbsp;关闭
+		<% else %>
+			<input type='radio' class='dhcpserv' id='startdhcp' name='aaa' value='start' checked='checked'>&nbsp;开启
+			<input type='radio' class='dhcpserv' id='stopdhcp' name='aaa' value='stop'>&nbsp;关闭
+		<% end %>
+		<br>
+		<p>DHCP服务能自动配置内网中各计算机的TCP/IP协议
+		</p>
+	</div>
+
+	<div class='foredit'>
+		<span class='lan_type_title'>静态IP设备列表</span>
+		<a class='lan_edit'><b>编辑</b></a>
+		<div class='clr'></div>
+	</div>
+	<div class='lan_static_setup'>
+		<table class='lan_static_dev' cellpadding=0 cellspacing=0>
+			<tr>
+				<th>主机名</th>
+				<th>MAC地址</th>
+				<th>内网IP地址</th>
+			</tr>
+			<%
+				for i,v in pairs(dhcpdevs) do%>
+				<tr class='lan_data'>
+					<%for k,val in pairs(v) do%>
+				<% if k == "name" then %>
+					<td><input class='static_name' type='text' disabled='disabled' value='<%=val%>'></td>
+				<% end %>
+				<% if k == "mac" then%>
+					<td>
+						<span class='macusual'><%=val%></span>
+						<select class='macadds'>
+							<option value='<%=val%>'><%=val%></option>
+							<%
+								for _,v in pairs(mac) do%>
+									<option value='<%=v%>'><%=v%></option>
+								<%end
+							%>
+							<option value='custom'>手动输入MAC地址</option>
+						</select>
+						<span class='ads_default'><input type='text' class='ads_default_mac' value=''></span>
+					</td>
+				<% end %>
+				<% if k == "ip" then%>
+					<td><input class='static_ip' type='text' disabled='disabled' value='<%=val%>'></td>
+					<td class='delete'><span></span></td>
+				<% end %>
+					<%end%>
+				</tr>
+				<%end
+			%>
+		</table>
+	</div>
+	<a href='javascript:void(0)' class='addstatic'><span class='addimg'></span><span class='addword'>添加设备</span></a>
+	<a href='javascript:void(0)' class='savestatic' rel='0'><b>保存</b></a>
+	<span class='lansetuppart2_mention'></span>
+</div>
+
+<table class='addnode'>
+	<tr class='lan_data'>
+		<td><input class='static_name' type='text' disabled='disabled' value=''></td>
+		<td>
+			<span class='macusual'><%=val%></span>
+			<select class='macadds'>
+				<option value='<%=val%>'><%=val%></option>
+				<%
+					for _,v in pairs(mac) do%>
+						<option value='<%=v%>'><%=v%></option>
+					<%end
+				%>
+				<option value='custom'>手动输入MAC地址</option>
+			</select>
+			<span class='ads_default'><input type='text' class='ads_default_mac' value=''></span>
+		</td>
+		<td><input class='static_ip' type='text' disabled='disabled' value=''></td>
+		<td class='delete'><span></span></td>
+	</tr>
+</table>
+<script type='text/javascript'>
+	var netipaddr = '<%=show_lan_ip%>';
+
+	$('.macadds').live('change',function(){
+		var curmac = $(this).val();
+		var curname = "";
+
+		for(var i=0;i<data.length;i++){
+			if (data[i].macaddr == curmac){
+				curname = data[i].hostname;
+			}
+		}
+
+		$(this).parent().parent().children('td:eq(0)').children('input').val(curname);
+	})
+</script>

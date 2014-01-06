@@ -1,0 +1,118 @@
+<%
+	require "luci.template"
+%>
+<div class='file_view'>
+	<div class='setup_head'>
+		<h4>文件查看</h4>
+		<a class='setup_return' href='javascript:void(0)'><span class='setup_return_img'></span>&nbsp;返回</a>
+		<div class='clr'></div>
+		<div class='bottom_line'>
+		</div>
+	</div>
+	<div class='viewfile'>
+		<%if flag == "Mounted" then%>
+			<div class='fileList_Panel'>
+				<div class='fileList_devName'>
+					<p><%=filename%></p>
+				</div>
+
+				<div class='fileList_nav'>
+					<span class='root_dir path_dir' title="">根目录</span>
+					<span class='last_step last_path_dir' title=""><<返回上一级目录</span>
+					<div class='clr'></div>
+				</div>
+
+				<div class='fileList_contents'>
+					<%
+						luci.template.render("admin_xcloud/fileviewlist",{filecontent=filecontent},nil)
+					%>
+				</div>
+			</div>
+		<%else%>
+			<div class='unview'>
+				<p>未发现设备，请在USB管理中挂载设备后再重试</p>
+			</div>
+		<%end%>
+	</div>
+</div>
+<script type='text/javascript'>
+	$('.fordownload_file').live('click',function(){
+		var path = $('.path_dir').attr('title')+$(this).attr('title');
+
+		var o = $(this);
+
+		$.ajax({
+			url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/fileview/lanipaddrcheck"))%>',
+			data:{npath:path},
+			dataType:'json',
+			method:'post',
+			success:function(r){
+				if (r.result == 'yes'){
+					window.location.href='<%=pcdata(luci.dispatcher.build_url("admin/xcloud/fileview/downloadfile"))%>?npath='+path;
+				}else{
+					//alert('文件过大，请用SAMBA下载');
+					o.next('span').css('display','block').html('文件过大，请用SAMBA下载').stop().fadeIn(500).fadeOut(2000);
+				}
+			}
+		})
+	})
+
+	$('.folder_click').live('click',function(){
+		var getPath = $('.path_dir').attr('title');
+		var curName = $(this).attr('title');
+
+		var realPath = getPath+curName;
+//alert(realPath);
+		$.ajax({
+			url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/fileview/fileviewlist"))%>',
+			dataType:'html',
+			method:'POST',
+			data:{path:realPath},
+			success:function(html){
+				$('.fileList_contents').html(html);
+				$('.last_step').show().attr('title',getPath);
+				$('.path_dir').attr('title',realPath).html(curName);
+			}
+		})
+	})
+
+	$('.last_path_dir').live('click',function(){
+		var lastPath = $('.last_step').attr('title');
+
+		$.ajax({
+			url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/fileview/fileviewlist"))%>',
+			dataType:'html',
+			method:'POST',
+			data:{path:lastPath},
+			success:function(html){
+				$('.fileList_contents').html(html);
+				if(lastPath == ""){
+					$('.last_step').hide().attr('title',"");
+					$('.path_dir').attr('title',"").html("根目录");
+				}else{
+					n_last = lastPath.split("/");
+					n_last.pop();
+					var arr_len = n_last.length;
+					if (arr_len == 1){
+						$('.last_step').attr('title',"");
+						$('.path_dir').attr('title',"").html(n_last[0]+"/");
+					}else{
+						var nn_last = "";
+						var nn_cur = "";
+
+						for (var i=0;i<arr_len;i++){
+							nn_cur += n_last[i]+"/";
+							if (i != (arr_len-1)){
+								nn_last += n_last[i]+"/";
+							}
+						}
+
+						$('.last_step').attr('title',nn_last);
+
+						$('.path_dir').attr('title',nn_cur).html(n_last[arr_len-1]);
+					}
+				}
+			}
+		})
+	})
+</script>

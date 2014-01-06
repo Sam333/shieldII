@@ -1,0 +1,229 @@
+<%
+	local system, model = luci.sys.sysinfo()
+-%>
+
+<!DOCTYPE html>
+<html>
+<head> 
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="format-detection" content="telephone=no" />
+<title>Shield</title>
+
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/style.css" type="text/css"/>
+
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery-1.8.1.min.js"></script>
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/artDialog/jquery.artDialog.js?skin=blueskin"></script>
+<script src="<%=resource%>/turbo/web/js/artDialog/plugins/iframeTools.source.js"></script>
+<script src="<%=resource%>/turbo/web/js/util.js"></script>
+
+<script type="text/javascript">//<![CDATA[
+	var i18_second = "秒";
+	var i18_hour = "小时";
+	var i18_minute = "分钟";
+	var i18_day = "天";
+	var uptime = 0;
+  //]]></script> 
+
+</head>
+<body>
+<div class="title">
+	<h2>系统状态</h2>
+</div>
+
+<div class="sheet">
+	<ul class="unit">
+		<li><p><b><%:名称%></b><span><%=luci.sys.hostname() or "?"%></span></p></li>
+		<li><p><b><%:处理器%></b><span><%=pcdata(model or "?")%></span></p></li>
+		<li><p><b><%:软件版本%></b>
+		<span>
+			<%=pcdata(luci.version.luciname)%> (<%=pcdata(luci.version.luciversion)%>)
+		</span></p></li>
+		<li><p><b><%:内核版本%></b><span><%=luci.sys.exec("uname -r")%></span></p></li>
+		<li><p><b>开机时长</b><span id="lan_time">0</span></p></li>
+	</ul>	
+
+	<ul class="unit network_false">
+		<li><h3>互联网</h3></li>
+		<li>
+			<p style='width:430px'>
+				<b>IPv4地址</b>
+				<span id="wan_ip"></span>
+				<span id="wan_type" ></span>
+				<a href="javascript:void();" onclick="window.parent.open_windows('set_network');">修改</a>
+			</p>
+		</li>
+
+		<li id="wan_ipv6_li" style="display: none">
+			<p><b>IPv6地址</b>
+				<span id="wan_ipv6"></span>
+			</p>
+		</li>
+
+		<li><p><b>MAC地址</b><span id="wan_mac"></span></p></li>
+		<li><p><b>DNS地址</b><span id="wan_dns"></span></p></li>
+		<li><p><b>网关地址</b><span ></span></p></li>
+	</ul>
+	
+	<ul class="unit">
+		<li><h3>局域网</h3></li>
+
+		<li><p>
+			<b>IPv4地址</b>
+			<span id="lan_ipv4">获取中...</span>
+			<a href="javascript:void();" onclick="window.parent.open_windows('options');">修改</a>
+		</p></li>
+
+		<li><p><b>IPv6地址</b><span id="lan_ipv6">获取中...</span></p></li>
+		<li><p><b>MAC地址</b><span id="lan_mac">获取中...</span></p></li>
+	</ul>
+	
+	<ul class="unit">
+		<li><h3>无线网络</h3></li>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="routers-table" id="wifi_network">
+			<tbody>
+				<tr>
+					<th class="signal" scope="col" style="width:100px">无线状态</th>
+			    	<th class="mac" scope="col" style="width:105px">网络名称</th>
+			    	<th class="ip" scope="col" style="width:100px">安全类型</th>
+			    	<th class="name" scope="col" width="*">无线信道</th>
+		    	</tr>
+		    	<tr class="cbi-section-table-row">
+					<td colspan="4"><em><br /><%:Collecting data...%></em></td>
+				</tr>
+		    </tbody>
+		</table>
+	</ul>
+</div>
+
+
+<script type="text/javascript">
+$(function(){
+	get_wan_info();	
+	get_lan_info();	
+	get_wifi_info();
+
+	$("#lan_time").html(millisecondToDate(<%=luci.sys.uptime()%>))
+	
+	function get_wifi_info(){
+		$.getJSON("<%=controller%>/admin/shield/get_wifi_networks",{},function(rsp){
+			var ls = document.getElementById('wifi_network');
+			if (ls)
+			{
+				while( ls.rows.length > 1 )
+					ls.rows[0].parentNode.deleteRow(1);
+
+				var networks = rsp[0].networks;
+
+				for( var i = 0; i < networks.length; i++ )
+				{
+					var tr = ls.rows[0].parentNode.insertRow(-1);
+						tr.className = 'cbi-section-table-row cbi-rowstyle-' + ((i % 2) + 1);
+
+					tr.insertCell(-1).innerHTML = networks[i].txpower ? "打开" : "关闭";
+					tr.insertCell(-1).innerHTML = networks[i].ssid;
+					tr.insertCell(-1).innerHTML = networks[i].encryption;
+					tr.insertCell(-1).innerHTML = networks[i].channel;
+				}
+
+				if( ls.rows.length == 1 )
+				{
+					var tr = ls.rows[0].parentNode.insertRow(-1);
+						tr.className = 'cbi-section-table-row';
+
+					var td = tr.insertCell(-1);
+						td.colSpan = 4;
+						td.innerHTML = '<em><br /><%:There are no active wifi_networks.%></em>';
+				}
+			}
+		});
+	}
+	
+	function get_wan_info(){
+		$.getJSON("<%=controller%>/admin/shield/iface_status",{"ifaces" : "wan"},function(rsp) {
+			if(rsp[0] != undefined){
+				console.log(rsp[0])
+
+				var retData = rsp[0]
+
+				$("#wan_type").html(retData.type);
+				
+				if (retData.ipaddrs.length > 0){
+					$("#wan_ip").html(retData.ipaddrs[0].addr + " / " + retData.ipaddrs[0].netmask);
+				}else{
+					$("#wan_ip").html("");
+					$("#wan_mask").html("");
+				}
+				
+				if (retData.dnsaddrs.length > 0){
+						$("#wan_dns").html(retData.dnsaddrs[0].addr);
+					}else{
+						$("#wan_dns").html("");
+				}
+
+				if(retData.ip6addrs.length > 0){
+					$("#wan_ipv6_li").show();
+					$("#wan_ipv6").html(retData.ip6addrs[0].addr + " / " + retData.ip6addrs[0].netmask);
+				}else{
+					$("#wan_ipv6_li").hide();
+					$("#wan_ipv6").hide();
+				}
+
+				$("#wan_mac").html(retData.macaddr.toUpperCase());	
+			}
+		});
+	}
+	
+	function get_lan_info(){ 
+		$.getJSON("<%=controller%>/admin/shield/iface_status",{"ifaces" : "lan"},function(rsp) {
+			if(rsp[0] != undefined){
+				retData = rsp[0]
+				if (retData.ipaddrs.length > 0) {
+					$("#lan_ipv4").show()
+					$("#lan_ipv4").html(retData.ipaddrs[0].addr +" / "+retData.ipaddrs[0].netmask);
+				}else{
+					$("#lan_ipv4").hide()
+				}
+				
+				if (retData.ip6addrs.length > 0){
+					$("#lan_ipv6").show()
+					$("#lan_ipv6").html(retData.ip6addrs[0].addr+" / "+retData.ip6addrs[0].mask);
+				}else{
+					$("#lan_ipv6").hide()
+				}
+				
+				$("#lan_mac").html(retData.macaddr);
+			}
+		});
+	}
+
+	function millisecondToHour(time){
+		return parseInt(time / 3600.0) + i18_hour + parseInt((parseFloat(time / 3600.0) -
+					parseInt(time / 3600.0)) * 60) + i18_minute +
+					parseInt((parseFloat((parseFloat(time / 3600.0) - parseInt(time / 3600.0)) * 60) -
+					parseInt((parseFloat(time / 3600.0) - parseInt(time / 3600.0)) * 60)) * 60) + i18_second;
+	}
+
+	function millisecondToDate(msd) {
+			var time = parseFloat(msd);
+			if (time != null && time != "") {
+				if (time > 60 && time < 60 * 60) {
+					time = parseInt(time / 60.0) + i18_minute + parseInt((parseFloat(time / 60.0) -
+						parseInt(time / 60.0)) * 60) + i18_second;
+				}
+				else if (time >= 60 * 60 && time < 60 * 60 * 24) {
+					time = millisecondToHour(time);
+				}else if (time >= 24* 60 * 60 ) {
+					var day = parseInt(time  / (3600.0 * 24) );
+					time = time - (day * 3600 * 24);
+					time =  day + i18_day + millisecondToHour(time);
+				}
+				else {
+					time = parseInt(time) + i18_second;
+				}
+			}
+			return time;
+	}
+})
+</script>
+</body>
+</html>

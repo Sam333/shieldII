@@ -1,0 +1,238 @@
+<div class='wifi_setup'>
+	<style type='text/css'>
+		.pppoetype{
+			display:none;
+		}
+
+		.wanstatic{
+			display: none;
+		}
+
+		.alert_word{
+			display:block;
+			float:right;
+			margin-right:10px;
+			color:#F04D4E;
+			padding-top:3px;
+		}
+	</style>
+	<div class='setup_head'>
+		<h4>外网设置</h4>
+		<a class='setup_return' href='javascript:void(0)'><span class='setup_return_img'></span>&nbsp;返回</a>
+		<div class='clr'></div>
+		<div class='bottom_line'>
+		</div>
+	</div>
+	<div class='setup_wifi'>
+		<% 	
+			local uci = require "luci.model.uci".cursor()
+			local ntm = require "luci.model.network"
+			ntm.init(uci)
+
+			local devices  = ntm:get_wifidevs()
+			local devs
+			local netlist = {}
+
+			for _, dev in ipairs(devices) do local nets = dev:get_wifinets()
+				local nets = dev:get_wifinets()
+				for _, net in ipairs(nets) do
+					netlist[#netlist+1] = net:id()
+				end
+			end
+
+			local netmd = require "luci.model.network".init()
+			local net = netmd:get_wifinet(netlist[1])
+			local dev = net:get_device()
+
+			local wiretype = nil
+			local nn = netmd:get_network("wan")
+			wiretype = nn:proto()				
+
+			local wifitype = wiretype
+
+			local sel1,sel2,sel3,sel4 = '','',''
+			
+			local word = '保存'
+
+			if wifitype == 'pppoe' then
+				sel1 = "selected='selected'";
+				word = "拨号"
+			elseif wifitype == 'dhcp' then
+				sel2 = "selected='selected'";
+			elseif wifitype == 'static' then
+				sel3 = "selected='selected'";
+			else
+				sel4 = "selected='selected'";
+			end
+
+			local wanuci = require "luci.model.uci".cursor()
+		%>
+		<ul>
+			<li>
+				<span class='setup_left'>WAN连接类型</span>
+				<span class='setup_right'><select class='wanchange' style='width:209px'>
+					<option value='pppoe'  <%=sel1%>>PPPoE拨号</option>
+					<option value='dhcp'   <%=sel2%>>动态IP地址</option>
+					<option value='static' <%=sel3%>>静态IP地址</option>
+					<option value="others" <%=sel4%>>其他类型</option>
+				</select></span>
+				<div class='clr'></div>
+			</li>
+			<li class='pppoetype'>
+				<span class='setup_left'>上网账号：</span>
+				<span class='setup_right'><input type='text' class='wify_long pppoe_pst' value='<%=wanuci.get("network","wan","username")%>'></span>
+				<div class='clr'></div>
+			</li>
+			<li class='pppoetype'>
+				<span class='setup_left'>上网密码：</span>
+				<span class='setup_right'><input type='text' class='wify_long pppoe_pwd' value='<%=wanuci.get("network","wan","password")%>'></span>
+				<div class='clr'></div>
+			</li>
+			<li class='wanstatic'>
+				<span class='setup_left'>IP地址：</span>
+				<span class='setup_right'><input type='text' class='wify_long wanstatic_ip' value='<%=wanuci.get("network","wan","ipaddr")%>'></span>
+				<div class='clr'></div>
+			</li>
+			<li class='wanstatic'>
+				<span class='setup_left'>子网掩码：</span>
+				<span class='setup_right'><input type='text' class='wify_long wanstatic_netmask' value='<%=wanuci.get("network","wan","gateway")%>'></span>
+				<div class='clr'></div>
+			</li>			
+			<li class='wanstatic'>
+				<span class='setup_left'>网关：</span>
+				<span class='setup_right'><input type='text' class='wify_long wanstatic_gateway' value='<%=wanuci.get("network","wan","gateway")%>'></span>
+				<div class='clr'></div>
+			</li>
+			<li class='wanstatic'>
+				<span class='setup_left'>DNS：</span>
+				<span class='setup_right'><input type='text' class='wify_long wanstatic_dns' value='<%=wanuci.get("network","wan","dns")%>'></span>
+				<div class='clr'></div>
+			</li>
+		</ul>
+		<a href='javascript:void(0)' class='dial'><b><%=word%></b></a>
+		<span class='alert_word'></span>
+	</div>
+</div>
+<script type='text/javascript'>
+	function wantypeChange(){
+		var proto = $('.wanchange').children('option:selected').val();
+
+		if (proto == 'pppoe'){
+			$('.pppoetype').css('display','block');
+			$('.wanstatic').css('display','none');
+			$('.dial b').html('拨号');
+		}else if(proto == 'dhcp'){
+			$('.wanstatic').css('display','none');
+			$('.pppoetype').css('display','none');
+			$('.dial b').html('保存');
+		}else if(proto == 'static'){
+			$('.wanstatic').css('display','block');
+			$('.pppoetype').css('display','none');
+			$('.dial b').html('保存');
+		}else{
+			$('.wanstatic').css('display','none');
+			$('.pppoetype').css('display','none');			
+			$('.dial b').html('保存');
+		}
+	}
+
+	$('.wanchange').change(function(){
+		wantypeChange();
+	})
+
+	wantypeChange();
+
+	function alertmention(word){
+		$('.alert_word').html(word).stop().animate({'opacity':1},1000,"",function(){
+			$('.alert_word').stop().animate({'opacity':0},3000);
+		});		
+	}
+
+	$('.dial').live('click',function(){
+		var flag = $('.wanchange').children('option:selected').val();
+
+		var o = {};
+
+		// check info
+		if (flag == "dhcp"){
+			o = {type:"dhcp"}
+		}else if(flag == "pppoe"){
+			var pppoe_pst = $('.pppoe_pst').val();
+			var pppoe_pwd = $('.pppoe_pwd').val();
+
+			if (pppoe_pst == '' || pppoe_pwd == ''){
+				alertmention('请输入必要信息');
+				return false;
+			}
+
+			o = {type:"pppoe", name:pppoe_pst, pwd:pppoe_pwd}
+		}else if (flag == "static"){
+			var wan_ip = $('.wanstatic_ip').val();
+			var wan_netmask = $('.wanstatic_netmask').val();
+			var wan_gateway = $('.wanstatic_gateway').val();
+			var wan_dns = $('.wanstatic_dns').val();
+
+			if (wan_ip == '' || wan_gateway == '' || wan_dns == ''|| wan_netmask ==''){
+				alertmention('请输入必要信息');
+				return false;
+			}
+
+			var exp=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
+
+			var reg = wan_ip.match(exp);
+
+			if(reg==null){
+				alertmention('请输入正确IP地址');
+				return false;
+			}
+
+			var reg0 = wan_netmask.match(exp);
+			if (reg0==null){
+				alertmention('请输入正确子网掩码');
+				return false;
+			}
+
+			var reg1 = wan_gateway.match(exp);
+
+			if (reg1==null){
+				alertmention('请输入正确网关');
+				return false;
+			}
+			var reg2 = wan_dns.match(exp);
+			if (reg2==null){
+				alertmention('请输入正确DNS');
+				return false;
+			}
+
+			o = {type:"static",ipads:wan_ip,gateway:wan_gateway,dns:wan_dns,netmask:wan_netmask}
+		}else if(flag == "others"){
+			o = {type:"others"}
+		}
+
+		//$('.alert_word').html('保存中...').css('color','#666').stop().animate({'opacity':1},100);
+		$('.alert_word').html('正在连接...').css('color','#666').stop().animate({'opacity':1},100);
+
+		$.ajax({
+			url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/wantypechange"))%>',
+			method:'POST',
+			data:o,
+			dataType:'json',
+			timeout:10000,
+			success:function(r){
+				var r = eval(r);
+				if(r['result'] == 'success'){
+					//$('.alert_word').html('已保存').stop(true,true).fadeOut(3000);
+					$('.alert_word').html('已保存').stop().animate({'opacity':0},3000);
+					updatestatus();
+					return false;
+				}
+			},
+			error:function(){
+				//$('.alert_word').html('已保存').stop(true,true).fadeOut(3000);
+				$('.alert_word').html('已保存').stop().animate({'opacity':0},3000);
+				updatestatus();
+				return false;
+			}
+		})
+	})
+</script>

@@ -1,0 +1,14 @@
+#loginbox{background: #F1FAFE url(../images/login_logo_130726@2x.png) no-repeat center 60px;   background-size: auto 146px;}
+#header #logo{background: url(../images/logo_130726@2x.png) no-repeat; background-size: 119px auto;}
+#main{ background: url(../images/bg130720.png) no-repeat 135px -20px; background-size: 824px 562px;}
+#nav li a{ background-image: url(../images/sidenav_icons_130715@2x.png); background-size: auto 409px;}
+#map a .icon{ background: url(../images/round_buttons_130715@2x.png) no-repeat; background-size: auto 240px; } /* 130927 */
+.stream{ background-image: url(../images/stream@2x.gif); background-size: 444px 189px;}
+#lans_list .lightning{ background-image: url(../images/lightning@2x.png); background-size: auto 28px;}
+.alert-icon i, #nav li a#state .alert-icon{background: url(../images/alert-icon@2x.png) no-repeat; background-size: auto 24px;}
+#services a#plug-in .icon{ background-image: url(../images/round_buttons_130715@2x.png); background-size: auto 240px;} /* 130927*/ 
+#reboot{background-image: url(../images/reboot_icon@2x.png); background-size: 24px auto;}
+#internet .icon{ background-image: url(../images/internet_icon@2x.png); background-size: 148px auto;} /* 130927 */
+#header .top_menu a#system_netdetect .icon{ background-image: url(../images/look-over@2x.png); background-size: 16px 16px;} /* 130930 */
+#header .top_menu a#setting_guide .icon{ background-image: url(../images/guidepost@2x.png); background-size: 16px 16px;} /* 130930 */
+#header .top_menu .spotbar .spot{ background-image: url(../images/spot@2x.png); background-size: 16px 16px; } /* 131006 */

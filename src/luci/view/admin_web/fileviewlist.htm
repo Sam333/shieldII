@@ -1,0 +1,19 @@
+<ul>
+	<% local last = ""
+	for i,v in pairs(filecontent) do
+		last = string.sub(v,string.len(v))
+		if last == "/" then%>
+			<li><a href='javascript:void(0)' class='folder_click' title="<%=v%>"><span class='folder'></span>&nbsp;<%=v%></a></li>
+		<%else%>
+			<li><a href='javascript:void(0)' class='nofolder_click' title="<%=v%>"><span class='notfolder'></span>&nbsp;<%=v%></a><span class='fordownload_file' title="<%=v%>"><b>下载</b></span><span class='filemention'></span></li>
+		<%end%>
+	<%end%>
+</ul>
+<!--
+<script type='text/javascript'>
+$('.fileList_contents ul li').hover(function(){
+		$(this).children('.fordownload_file').show();
+	},function(){
+		$(this).children('.fordownload_file').hide();
+})
+</script>-->

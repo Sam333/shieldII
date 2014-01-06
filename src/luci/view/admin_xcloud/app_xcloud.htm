@@ -1,0 +1,124 @@
+<%+xc_header%>
+
+<%
+-- 获取登录状态
+local h = require "luci.http"
+local c = require "luci.socket"
+
+local result = c.send('getStatus')
+
+
+function Split(szFullString, szSeparator)  
+	local nFindStartIndex = 1  
+	local nSplitIndex = 1  
+	local nSplitArray = {}  
+	while true do  
+	   local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)  
+	   if not nFindLastIndex then  
+	    nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))  
+	    break  
+	   end  
+	   nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)  
+	   nFindStartIndex = nFindLastIndex + string.len(szSeparator)  
+	   nSplitIndex = nSplitIndex + 1  
+	end  
+	return nSplitArray  
+end 
+local r = Split(result,"||")
+
+local res = ""
+local username = ""
+
+if r[3] == "1" then
+	res = "nologing"
+else
+	res = "hasloging"
+	username = r[4]
+end
+%>
+
+<div class='navigation'>
+	<div class='navigation_title'>
+		<a href='<%=pcdata(build_url("admin/xcloud"))%>'>主页</a>>>小云应用
+	</div>
+</div>
+<div class='app_xcloud_content'>
+	<% if res == "nologing" then %>
+	<div class='app_xcloud_input'>
+		<h3>小云登录</h3>
+		<label for="useraccount">账号：</label>
+		<input type="text" id="useraccount" name="useraccount" class="useraccount app_xc_input"><br/>
+		<label for="password">密码：</label>
+		<input type="password" id="password" name="password" class="password app_xc_input">
+		<div class='app_xcloud_mention'><p></p></div>
+		<a href="javascript:void(0)" class="login loginin"><b>登&nbsp;&nbsp;&nbsp;&nbsp;录</b></a>
+		<br/><br/>
+		<div>登录小云账号后，轻松与小云客户端连接。</div>
+		<div>没有小云账号？点击此处<a href="http://www.xcloud.cc/register.html" target="_blank">注册</a></div>
+	</div>
+	<%else%>
+	<div class="app_xcloud_logout">
+		<p>当前登录账号</p>
+		<div class="app_xcloud_logout_panel">
+			<%=username%><a href="javascript:void(0)" class="loginout"><b>注销</b></a>
+		</div>
+		<div class='app_xcloud_logout_mention'>
+			<p>请使用小云iOS或安卓客户端登录相同账号进行连接</p>
+		</div>
+	</div>	
+	<%end%>
+
+	<div class='app_xcloud_2wei'>
+		<p>使用小云安卓或iOS客户端直接扫描二维码进行连接</p>
+		<img src='<%=media%>/2wei.png?<%=os.time()%>'>
+		<p>登录即可使用移动端小云应用，享受更丰富、便捷的小云服务，详情请登录<a target='_blank' class='l_xcloud' href='http://www.xcloud.cc'>www.xcloud.cc</a></p>
+	</div>
+</div>
+
+<script type='text/javascript'>
+function is_email(str) {
+    var reg = /^([a-zA-Z0-9_-])+(\.[a-zA-Z0-9_-]+)*@([a-zA-Z0-9_-])+(\.[a-zA-Z0-9_-]+)*\.[a-zA-Z]{2,4}$/;
+    return reg.test(str);
+}
+
+$('.loginin').live('click',function(){
+	var username = $('.useraccount').val()
+	var password = $('.password').val()
+
+	if (username == "" || password == ""){
+		$('.app_xcloud_input p').html("账户或密码为空").stop().fadeIn(800).fadeOut(2000);
+		return false
+	}
+
+	if(!is_email(username)){
+		$('.app_xcloud_input p').html("账户需为邮箱格式").stop().fadeIn(800).fadeOut(2000);
+		return false;
+	}
+
+	XHR.get('<%=pcdata(luci.dispatcher.build_url("admin/xcloud/loginin"))%>',{uname:username,passwd:password},function(x,json){
+		//alert(json.loginstatus)
+		
+		if (json.loginstatus == "success"){
+			window.location.href='<%=pcdata(luci.dispatcher.build_url("admin/xcloud/app_xcloud"))%>'
+		}else{
+			$('.app_xcloud_input p').html("账号或密码错误").stop().fadeIn(800).fadeOut(2000);
+		}
+	})
+})
+
+$('.loginout').live('click',function(){
+	XHR.get('<%=pcdata(luci.dispatcher.build_url("admin/xcloud/loginout"))%>',{uname:'<%=username%>'},function(x,json){
+		//alert(json.logoutstatus)
+		
+		
+		if (json.logoutstatus == "success"){
+			window.location.href='<%=pcdata(luci.dispatcher.build_url("admin/xcloud/app_xcloud"))%>'
+		}else{
+			alert("注销失败")
+		}
+	})
+})
+
+</script>
+
+<%+xc_footer%>

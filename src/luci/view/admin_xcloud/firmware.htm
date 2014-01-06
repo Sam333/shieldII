@@ -1,0 +1,91 @@
+<div class='firmware_update'>
+	<div class='setup_head'>
+		<h4>固件升级</h4>
+		<a class='setup_return' href='javascript:void(0)'><span class='setup_return_img'></span>&nbsp;返回</a>
+		<div class='clr'></div>
+		<div class='bottom_line'>
+		</div>
+	</div>
+
+	<div class='firmware_setup'>
+		<div class='check_firmware'>
+			<span>发现新固件</span>
+			<a href='javascript:void(0)'>下载</a>
+			<div class='firmware_newast'><p>当前固件已为最新版本</p></div>
+			<div class='clr'></div>
+			<script type='text/javascript'>
+				changeVersion('<%=pcdata(luci.version.xcloud_update)%>');
+			</script>
+		</div>
+
+		<div class='firmware_panel'>
+			<h4>请将下载到电脑端的固件导入进行升级</h4>
+			<form id='upload_firmware' action='<%=pcdata(build_url("admin/xcloud/firmware/upload"))%>' method='post' enctype="multipart/form-data">
+				<input type='file' name='image' class='firmware_input'>
+			</form>			
+			<a href='javascript:void(0)' class='firmwarebtn'><b>导入</b></a>
+			<span class='firmware_mention'></span>
+		</div>
+
+		<div class='firmware_uploading'>
+			<p>固件升级中，请稍后...升级过程中请勿拔出电源，否则会造成如意云路由固件损坏</p>
+		</div>
+	</div>
+</div>
+<script type='text/javascript'>
+	$('.firmwarebtn').live('click',function(){
+		if ($('.firmware_input').val()==""){
+			$('.firmware_mention').html('您未选择文件').stop().animate({'opacity':1},1000,"",function(){
+				$('.firmware_mention').stop().animate({'opacity':0},3000);
+			});			
+			return false;
+		}
+
+		$('#upload_firmware').ajaxSubmit({
+			type:"post",
+			url:$('.upload_firmware').attr('action'),
+			dataType:"html",
+			success:function(r){
+				if (r == 'success'){	
+					startUpload();
+				}
+			},
+			error:function(){
+				alert('error')
+			}
+		});
+	})
+
+	function startUpload(){
+		if($('#upload_firmware input').val() != ""){
+			$('.check_firmware').hide();
+			$('.firmware_panel').hide();
+			$('.firmware_uploading').show();
+		}
+
+		TINY.box.show({html:"<div></div>",fixed:true,animate:false,close:false,boxid:'error',width:240,height:40});
+		$('.tinner').hide();
+
+		
+		$.ajax({
+			url:'<%=pcdata(build_url("admin/xcloud/firmware/uploading"))%>',
+			dataType:'json',
+			method:'post',
+			timeout:10000,
+			success:function(r){
+				alert(123123);
+			}
+		})
+
+		var interval = window.setInterval(function() {
+			//var img = new Image();
+
+			//img.onload = function() {
+				//window.clearInterval(interval);
+				window.location.href = 'http://192.168.99.1/';
+			//};
+
+			//img.src = 'http://'+'192.168.99.1'+'<%=resource%>/icons/loading.gif?' + Math.random();
+		}, 80000);
+	}
+</script>

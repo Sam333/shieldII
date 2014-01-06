@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="format-detection" content="telephone=no" />
+<title>HiWiFi 路由器</title>
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/style.css" type="text/css"/>
+<script type="text/JavaScript" src="<%=resource%>/turbo/web/js/curvycorners.src.js"></script><!-- 圆角兼容 -->
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery-1.8.1.min.js"></script>
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/artDialog/jquery.artDialog.js?skin=blueskin"></script>
+<script src="<%=resource%>/turbo/web/js/artDialog/plugins/iframeTools.source.js"></script>
+</head>
+
+<style type="text/css">
+	table.zone td.tor{
+		text-align: right;
+		width:120px;
+		line-height:14px;
+	}
+</style>
+<body>
+
+<div class="title">
+	<h2>高级设置<i>设置路由器安全 , 及其他高级设置</i></h2>
+</div>
+
+<div class="menu">
+	<li><a href="#" id="localIP"><span>局域网 IP 地址</span></a></li>
+	<li><a href="#" id="dhcp"><span>局域网 DHCP 服务</span></a></li>
+	<li><a href="#" id="mtu"><span>网络 MTU 设置</span></a></li>
+	<li><a href="#" id="ppp"><span>PPP 高级设置</span></a></li>
+	<li><a href="#" id="macClone"><span>MAC 地址克隆</span></a></li>
+
+	<li><a href="#" id="upnp"><span>UPNP 状态</span></a></li>
+	<li><a href="#" id="l2tp"><span>L2TP</span></a></li>
+	<li><a href="#" id="wirelesschannel"><span>无线信道设置</span></a></li>
+	<li><a href="#" id="wirelessadvist"><span>无线 MAC 访问控制</span></a></li>
+	<li><a href="#" id="time"><span>系统时间管理</span></a></li>
+
+	<li><a href="#" id="update"><span>路由器升级管理</span></a></li>
+	<li><a href="#" id="reset"><span>恢复出厂设置</span></a></li>
+	<li><a href="#" id="diagnose"><span>路由器诊断</span></a></li>
+</div>
+
+<iframe src="<%=REQUEST_URI%>/lan" frameborder="0"  class="setup_box"  width = 550  ></iframe>
+
+<script type="text/javascript">
+	var current_windows = ""
+
+	$(function(){
+		$("#localIP").click(function(){
+			open_settings_windows("lan");
+		})
+
+		$("#dhcp").click(function(){
+			open_settings_windows("dhcp");
+		})
+
+		$("#mtu").click(function(){
+			open_settings_windows("mtu");
+		})
+
+		$("#ppp").click(function(){
+			open_settings_windows("ppp_adv");
+		})
+
+		$("#macClone").click(function(){
+			open_settings_windows("mac");
+		})
+
+		$("#upnp").click(function(){
+			open_settings_windows("upnp");
+		})
+
+		$("#l2tp").click(function(){
+			open_settings_windows("l2tp");
+		})
+
+		$("#wirelesschannel").click(function(){
+			open_settings_windows("channel");
+		})
+
+		$("#wirelessadvist").click(function(){
+			open_settings_windows("mac_filter");
+		})
+
+		$("#time").click(function(){
+			open_settings_windows("systime");
+		})
+
+		$("#update").click(function(){
+			open_settings_windows("update_manger");
+		})
+
+		$("#reset").click(function(){
+			open_settings_windows("reset");
+		})
+
+		$("#diagnose").click(function(){
+			open_settings_windows("diagnose");
+		})
+	})
+
+	function open_settings_windows(act){
+		console.log(act)
+		$("iframe").attr("src" ,"<%=REQUEST_URI%>/" + act)
+	}
+</script>
+
+
+</body>
+</html>
+

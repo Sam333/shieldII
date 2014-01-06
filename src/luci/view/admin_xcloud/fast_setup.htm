@@ -1,0 +1,36 @@
+<%+xc_header%>
+<%
+	require "luci.template"
+	local uci = require "luci.model.uci".cursor()
+
+	local show_lan_ip = uci.get('network','lan','ipaddr') or '自动'
+%>
+<div class='navigation'>
+	<div class='navigation_title'>
+		<a href='<%=pcdata(build_url("admin/xcloud"))%>'>主页</a>>>快速设置
+	</div>
+</div>
+<div class='fast_setup'>
+	<div class='wansetup fast_box'>
+		<%
+			luci.template.render('admin_xcloud/wansetup')
+		%>
+	</div>
+	<div class='wifisetup fast_box'>
+		<%
+			luci.template.render('admin_xcloud/wireless')
+		%>
+	</div>
+	<div class='clr'></div>
+	<div class='lansetup fastlan'>
+		<%
+			luci.template.render('admin_xcloud/lansetup',{flag=1})
+		%>
+	</div>
+</div>
+<script type='text/javascript'>
+	var netipaddr = '<%=show_lan_ip%>';
+	var lanipaddrurl = '<%=pcdata(luci.dispatcher.build_url("admin/xcloud/lanipaddrsetup"))%>';
+	var landhcpurl = '<%=pcdata(luci.dispatcher.build_url("admin/xcloud/lansetup2dhcp"))%>';
+</script>
+<%+xc_footer%>

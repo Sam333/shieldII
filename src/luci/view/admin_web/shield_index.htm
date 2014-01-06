@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">	
+<meta http-equiv="x-ua-compatible" content="IE=9" />
+<meta name="format-detection" content="telephone=no" />
+
+<title>Shield后台</title>
+
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/style.css?v=1003" type="text/css"/>
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/retina.css?v=1003" type="text/css" media="only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2)" />
+<style type="text/css">
+a{ behavior:url(<%=resource%>/turbo/web/images/blur.htc);}
+</style>
+
+<script type="text/JavaScript" src="<%=resource%>/turbo/web/js/share_content.js?v=1015"></script>
+<link rel='stylesheet' type="text/css" href="<%=media%>/xcloud.css?<%=os.time()%>">
+<script type='text/javascript' src="<%=resource%>/tinybox.js"></script>
+<script type='text/javascript' src="<%=resource%>/jquery-1.8.2.min.js"></script>
+<script type='text/javascript' src="<%=resource%>/jquery.form.js"></script>
+<script type="text/javascript" src="<%=resource%>/xhr.js"></script>
+<script type="text/javascript" src="<%=resource%>/xcloud.js"></script>
+</head>
+<body id="home">
+<div id="header">
+	<div class="wrap">
+		<p class="top_menu">
+			</span><a href="<%=controller%>/admin_web/system/net_detect" id="system_netdetect" target="_blank">网络诊断</a>
+			<span class="pipe">|</span><a href="#" id="system_config">修改密码</a>
+			<span class="pipe">|</span><a href="<%=controller%>/logout">退出</a>
+		</p>
+		<h1><a href="#" id="logo">Shield</a></h1>
+	</div>
+</div>
+		<%
+			require "luci.template"
+		%>
+		<div class='wrap'>
+			<div class='status'>
+				<div class='status_c'>
+					<%=luci.template.render("admin_web/shield_status")%>
+				</div>
+			</div>
+			<div class='setup'>
+				<div class='setup_c'>
+					<%=luci.template.render("admin_web/shield_config")%>
+				</div>
+				<div class='clr'></div>
+			</div>
+			<div class='clr'></div>
+		</div>
+	<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery-1.8.1.min.js?v=1003"></script>
+	<script type="text/javascript" src="<%=resource%>/turbo/web/js/artDialog/jquery.artDialog.js?skin=blueskin"></script>
+	<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery.cookie.min.js?v=1003"></script>
+	<script type="text/javascript" src="<%=resource%>/turbo/interface.js?v=1003"></script>
+	<script src="<%=resource%>/turbo/web/js/artDialog/plugins/iframeTools.source.js?v=1003"></script>
+	<script src="<%=resource%>/turbo/web/js/util.js?v=1003"></script>
+	<script type='text/javascript'>
+			/* 	修改密码*/
+
+				function changePanel(act, o){
+					alert(act)
+					if(art.dialog.list['func_box']){
+						art.dialog.list['func_box'].close();
+					}
+					if (act=="set_wifi"){
+
+						art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/set_wifi"))%>', {id:"func_box", title: '无线设置',width:600, height:480, lock:true,drag: false});
+			        } else if (act=="set_network") {
+						art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/network"))%>', {id:"func_box", title: '外网设置',width:640, height:550, lock:true,drag: false});
+			      	} else  if (act=="cloud") {
+						
+			       	} else  if (act=="application") {
+			        } else  if (act=="system_state") {
+			        	art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/info"))%>', {id:"func_box", title: '系统状态',width:600, height:650, lock:true,drag: false});
+			       	} else  if (act=="advance_settings") {
+					    art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/settings"))%>', {id:"func_box", title: '高级设置',width:780, height:590, lock:true,drag: false});
+				    } else  if (act=="system_config") {
+						art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/modify_password"))%>', {id:"func_box", title: '修改密码',width:500, height:450, lock:true,drag: false});
+				    } else  if (act=="device_list") {
+						art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/devices_list"))%>', {id:"func_box", title: '连接设备列表',width:660, height:450, lock:true,drag: false});
+				    }  else if (act=="traffic_info"){
+				        art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/web_status"))%>', {id:"func_box", title: '实时流量',width:790, height:480, lock:true,drag: false});
+				    } else if (act=="mac_filter") {
+					    art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/settings"))%>', {id:"func_box", title: 'mac 地址访问限制',width:780, height:570, lock:true,drag: false});
+
+					} else if (act=="usbinfo") {
+					    art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/usbinfo"))%>', {id:"func_box", title: 'USB 设置',width:780, height:570, lock:true,drag: false});
+					} else if (act=="fileview") {
+					    art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/fileview"))%>', {id:"func_box", title: 'USB 设置',width:780, height:570, lock:true,drag: false});
+
+					} else{
+						$.ajax({
+							url:'<%=pcdata(luci.dispatcher.build_url("admin/shield"))%>/'+act,
+							type:'POST',
+							data:o,
+							dataType:'html',
+							success:function(r){
+								$('.setup_c').html(r);
+							}
+						});
+					} 
+
+				}
+			$("#system_config").click(function(){
+				changePanel("system_config");
+			})
+			function updatestatus(){
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/shield/xcloudstatus"))%>',
+					type:'POST',
+					dataType:'html',
+					success:function(html){
+						if (html != "")
+							$('.status_c').html(html);
+					}
+				})
+			}
+
+			$('.status_btn').live('click',function(){
+				var flag = $(this).attr('id');
+				changePanel(flag);
+			})
+
+			$('.setup_return').live('click',function(){
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/shield/setupreturn"))%>',
+					type:'POST',
+					data:{},
+					dataType:'html',
+					success:function(r){
+						$('.setup_c').html('');
+						$('.setup_c').html(''+r);
+					}
+				})
+			})
+
+			var netipaddr = '<%=show_lan_ip%>';
+			var lanipaddrurl = '<%=pcdata(luci.dispatcher.build_url("admin/shield/lanipaddrsetup"))%>';
+			var landhcpurl = '<%=pcdata(luci.dispatcher.build_url("admin/shield/lansetup2dhcp"))%>';
+
+			function appsetup_change(flag,obj){
+				//alert(flag);
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/shield/appsetupselect"))%>',
+					dataType:'html',
+					data:{choose:flag},
+					type:'post',
+					success:function(html){
+						$('.app_list').html(html);
+						obj.attr('rel','0');
+					}
+				})
+			}	
+
+			$('.appinstall').live('click',function(){
+				if ($(this).attr('rel') == '1')
+					return false;
+				$(this).attr('rel','1');
+				var o = $(this);
+
+				$(this).css({'border-top':'none','background':'none'});
+				$('.lan_setup_dhcp').css({'border-top':'1px solid #CECECE','background':'#EEE'})
+			
+				appsetup_change('install',o);
+			})
+
+			$('.appuninstall').live('click',function(){
+				if ($(this).attr('rel') == '1')
+					return false;
+				$(this).attr('rel','1');
+				var o = $(this);
+
+				$(this).css({'border-top':'none','background':'none'});
+				$('.lan_setup_lan').css({'border-top':'1px solid #CECECE','background':'#EEE'})
+			
+				appsetup_change('notinstall',o);
+			})
+
+			$('.uninstall').live('click',function(){
+				var unid = $(this).attr('rel');
+				var o = $(this).parent().parent();
+
+				$(this).css('display','none');
+				$(this).next().css('display','block');
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/shield/appsetup/appuninstall"))%>',
+					data:{uid:unid},
+					dataType:'json',
+					type:'post',
+					timeout:10000,
+					success:function(r){
+						var tmp = r.result;
+						var o3 = tmp.split("\n");
+						var tmp1 = o3[o3.length-2];						
+						if (tmp1.length == 7){
+							//alert(111111);
+							o.remove();
+						}else{
+							alert('卸载失败');
+						}
+					},
+					error:function(){
+						//o.remove();
+						alert('卸载失败');
+					}
+				})
+			})
+
+			$('.updateapp').live('click',function(){
+				var path = $(this).attr('rel');
+				var o = $(this);
+
+				$(this).css('display','none');
+				$(this).next().css('display','block');
+
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/shield/appsetup/startinstall"))%>',
+					data:{type:'1',dir:path},
+					dataType:'json',
+					type:'post',
+					timeout:50000,
+					success:function(r){
+						if(r.result == 'success'){
+							$(o).next().css('display','none');
+						}
+					}
+				})
+			})
+
+			/*******usb********/
+			$('.usb_obt_n').live('click',function(){
+				if ($('.usb_devadd h4').attr('rel') == '1'){
+					return false;
+				}
+
+				var o = $(this).parent();
+				var i = $(this).parent().parent();
+				var idx = $('.usb_devopt tr').index(i);
+				var flag = $(this).attr('rel');
+
+				$(this).css('display','none');
+				$(this).parent().attr('rel','1').append("<span>挂载中...</span>");
+				$('.usb_devadd h4').attr('rel','1');
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/shield/usbinfo/usbaddmain"))%>',
+					data:{dev:flag},
+					dataType:'json',
+					type:'post',
+					time:50000,
+					success:function(r){
+						//alert(r.result);
+						if (r.result == 8){
+							$('.ndevhasopt').show();
+							$('.ndevremove').css('display','block');
+							$('.ndevremove').attr('rel',flag);
+							$('.usb_devadd h4').attr('rel','0');
+							o.children('span').remove();
+							o.append('<span>主分区</span>');
+
+							// 清掉非主分区的rel
+							$('.usb_devopt tr').each(function(index,obj){
+								if (index != idx){
+									$(obj).children('td:eq(2)').removeAttr('rel');
+									$(obj).children('td:eq(2)').children('span').remove();
+								}
+							})
+							updatestatus();
+						}else{
+							$('.ndevremove').attr('rel',flag);
+							$('.usb_devadd h4').attr('rel','0');
+							o.children('span').remove();
+							o.append('<span>挂载失败</span>');							
+
+							$('.usb_devopt tr').each(function(index,obj){
+								if (index != idx){
+									$(obj).children('td:eq(2)').removeAttr('rel');
+									$(obj).children('td:eq(2)').children('span').remove();
+								}
+							})
+							updatestatus();
+						}
+					},
+					error:function(){
+						changePanel('usbinfo');
+					}
+				})
+			})
+
+			$('.ndevremove').live('click',function(){
+				var flag=$(this).attr('rel');
+				$('.ndevremoving').css('display','block');
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/shield/usbinfo/usbremovemain"))%>',
+					data:{dev:flag},
+					dataType:'json',
+					type:'post',
+					time:50000,
+					success:function(r){
+						//alert(r.result);
+						if (r.result == 8){
+							$('.ndevhasopt').hide();
+							$('.ndevremoving').css('display','none');
+							$('.ndevremove').css('display','none');
+
+							$('.usb_devopt tr').each(function(index,obj){
+								$(obj).children('td:eq(2)').removeAttr('rel');
+								$(obj).children('td:eq(2)').children('span').remove();
+							})
+							updatestatus();
+						}else{
+							$('.ndevremoving').css('display','none');
+							$('.ndevremovefailed').show();
+						
+							$('.usb_devopt tr').each(function(index,obj){
+								$(obj).children('td:eq(2)').removeAttr('rel');
+								$(obj).children('td:eq(2)').children('span').remove();
+							})
+							updatestatus();
+						}
+					}
+				})
+			})
+
+			/*******************wds**********************/
+			$('.wdsoptbegin').live('click',function(){
+				var flag = $(this).attr('id');
+				changePanel(flag);
+			})
+
+			$('.wdsconect').live('click',function(){
+				var flag 	= $(this).attr('id');
+				var parent 	= $(this).parent().parent();
+				var ssid 	= parent.children('td:eq(1)').children('div').html();
+				var bssid	= parent.children('td:eq(2)').html();
+				var singal	= parseInt(parent.children('td:eq(3)').html());
+				var chanel  = parent.children('td:eq(4)').html();
+				var encoryp	= parent.children('td:eq(5)').children('div').html();
+
+				var data = {type:'1',ss:ssid,bs:bssid,si:singal,ch:chanel,en:encoryp}
+				changePanel(flag,data);
+			})
+
+			$('.wdsreturn').live('click',function(){
+				var flag = $(this).attr('id');
+				changePanel(flag);
+			})
+
+			function wdsmention(word){
+				$('.wdsstart_mention').html(word).stop().animate({'opacity':1},1000,"",function(){
+					$('.wdsstart_mention').stop().animate({'opacity':0},3000);
+				});				
+			}
+
+			function wdsbegin(ssid,bssid,chanel,authmode,encryptype,codeval){
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/shield/wdsstart"))%>',
+					data:{ss:ssid,bs:bssid,ch:chanel,au:authmode,en:encryptype,code:codeval},
+					dataType:'json',
+					type:'post',
+					time:50000,
+					success:function(r){
+						if (r.result == '1')
+							wdsmention('连接成功');
+						else
+							wdsmention('连接失败');
+					}
+				})
+			}
+
+			$('.wdsave').live('click',function(){
+				// get data
+				var ssid=$('#wds_ssid').val();
+				var bssid=$('#wds_bssid').val();
+				var chanel=$('.wds_chanel').val();
+				var codetype=$('.wds_code').val();
+				var codeval=$('#code_val').val();
+				var selradio=$('.wdsdhcpradio').attr('checked');
+
+				var authmode='';
+				var encryptype='';
+				var tmp = '';
+
+				if (ssid==''){
+					wdsmention('ssid为空');
+					return false;
+				}
+
+				if (bssid==''){
+					wdsmention('bssid为空');
+					return false;	
+				}
+
+				if (codetype!='OPEN/NONE'){
+					if (codeval == ''){
+						wdsmention('请输入密码');
+						return false;
+					}
+				}
+
+				if (!selradio){
+					wdsmention('中继模式下启用DHCP服务器将导致无法上网');
+					return false;	
+				}
+				
+
+				tmp = codetype.split("/");
+				authmode = tmp[0];
+				encryptype = tmp[1];
+
+				wdsmention('连接中...');
+				$.ajax({
+					url:landhcpurl,
+					dataType:'json',
+					data:{flag:'stop'},
+					method:'post',
+					timeOut:30000,
+					success:function(r){
+						wdsbegin(ssid,bssid,chanel,authmode,encryptype,codeval);
+					},
+					error:function(o,i,j,k){
+						wdsbegin(ssid,bssid,chanel,authmode,encryptype,codeval);
+					}
+				})
+			})
+
+			$('.wdsturn').live('click',function(){
+				var flag = $(this).val();
+				
+				if (flag == 'start'){
+					$('.wdsoptturnon').show();
+					$('.wdsoptturn1').hide();
+				}else{
+					$('.wdsoptturnon').hide();
+					$('.wdsoptturn1').show();
+				}
+			})
+
+			function wdstop_mention(word){
+				$('.wdstop_mention').html(word).stop().animate({'opacity':1},1000,"",function(){
+					$('.wdstop_mention').stop().animate({'opacity':0},3000);
+				});	
+			}
+
+			$('.wdstop').live('click',function(){
+				wdstop_mention("断开连接中...")
+
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/shield/wdstop"))%>',
+					dataType:'json',
+					success:function(r){
+						if (r.result == 'success')
+							wdstop_mention("成功断开连接")
+					}
+				})
+			})
+	</script>
+<%+xc_footer%>

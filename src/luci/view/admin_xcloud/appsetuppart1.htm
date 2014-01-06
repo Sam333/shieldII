@@ -1,0 +1,135 @@
+<%
+	require "luci.sys"
+
+	require "luci.sys";
+	require "luci.dispatcher"
+	
+	local appsetup = luci.sys.exec('/usr/local/app/ReadInstallPlugin BASE')
+
+	function Split(szFullString, szSeparator)  
+		local nFindStartIndex = 1  
+		local nSplitIndex = 1  
+		local nSplitArray = {}  
+		while true do  
+		   local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)  
+		   if not nFindLastIndex then  
+		    nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))  
+		    break  
+		   end  
+		   nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)  
+		   nFindStartIndex = nFindLastIndex + string.len(szSeparator)  
+		   nSplitIndex = nSplitIndex + 1  
+		end  
+		return nSplitArray  
+	end
+
+	local applength = string.len(appsetup)
+
+	local appsetupdata = {}
+
+	if applength ~= 3 then
+		appsetupdata = Split(appsetup,"////")
+	end	
+
+	local hasinstall = ""
+	local tmp = {}
+
+	local count = #appsetupdata
+	local appsetuped = {}
+	
+	for i,v in pairs (appsetupdata) do
+		tmp = Split(v,",")
+		table.insert(appsetuped,tmp)
+		if (i ~= count) then
+			hasinstall = hasinstall .. tmp[1] .. "_".. tmp[3] .. "|||"
+		else
+			hasinstall = hasinstall .. tmp[1] .. "_".. tmp[3]
+		end
+	end
+%>
+
+<div class='app_part part1'>
+	<ul>
+		<%
+			local n_size = 0
+			local n_len = 0
+			
+			function calctmp(number,std)
+			    return tonumber(string.format("%." .. std .. "f",number))
+			end
+
+			local show=0
+			for i,v in pairs (appsetuped) do
+				if string.len(v[1]) ~= 5 then
+					n_len = string.len(v[5])
+					if n_len < 8 then
+						n_size = v[5]/1024
+					else
+						n_size = (v[5]/1024)/1024
+					end
+
+					n_size = calctmp(n_size,2)
+					
+					if n_len < 8 then
+						n_size = n_size ..'KB'
+					else
+						n_size = n_size ..'M'
+					end
+
+					show = show + 1
+				%>
+				<li>
+					<img class='app_opt_img' src='<%=pcdata(luci.dispatcher.build_url("admin/xcloud/showimg"))%>?id=<%=v[1]%>&small=1'>
+					<span class='app_opt_title'><%=v[2]%></span><span class='app_opt_size'><%=n_size%></span>
+					<div class='app_opt_btn'><a href='javascript:void(0)' class='uninstall app_opt_btn_right appstatus<%=v[1]%>' rel='<%=v[1]%>'><b>卸载</b></a><span class="appstr uninstalling">卸载中</span></div>
+					<div class='clr'></div>
+				</li>
+			<%	end
+			end
+		%>
+	</ul>
+	<%if show == 0 then%>
+		<div class='appsetupmention'>
+			尚未安装应用
+		</div>
+	<%end%>
+</div>
+
+<script type='text/javascript'>
+	var o = "<%=hasinstall%>";
+
+	$.getJSON("http://r.xcloud.cc/router/index.php?m=Index&a=checkStatus&callback=?",{ids:o,type:'1',nicon:"1"},function(json){
+		str = eval(json);
+
+		n = str.length;
+
+		var tmp = "";
+		var tmpstr = "";
+
+		for (var i=0;i<n;i++)
+		{	
+			if (json[i].version != ""){
+				tmpstr = "<a href='javascript:void(0)' class='updateapp app_opt_btn_left' rel='"+json[i].appid+"'><b>更新</b></a><span class='appstr1 updating'>更新中</span>";
+				$('.appstatus'+json[i].appid).before(tmpstr);
+			}
+		}
+	});
+</script>
+
+<div class='appstore'>
+	<%
+		local insize = luci.sys.exec('/usr/local/app/GetFreeDisk rom')
+		local outsize = luci.sys.exec('/usr/local/app/GetFreeDisk usb')
+	
+		local tmp1 = "未插入设备"
+
+		if string.len(outsize) ~= 25 then	
+			local tmp2=Split(outsize,",")
+			tmp1=tmp2[1]
+		end
+		
+	%>
+	<p>可用空间：内置&nbsp;<span class='appstorein'><%=insize%></span>&nbsp;&nbsp;
+		外置&nbsp;<span class='appstoreout'><%=tmp1%></span>
+	</p>
+</div>

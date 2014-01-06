@@ -1,0 +1,172 @@
+<%
+	require "luci.sys"
+	luci.sys.exec('/usr/local/localshell/wds stat')
+	local uci = require "luci.model.uci".cursor()
+
+	local stat = uci.get('wireless','wds','stat') or ''
+	
+	local ssid,bssid=''
+	local chanel = '11'
+	local encryp = 'none'
+
+	if tostring(stat) ==  '1' then
+		ssid = uci.get('wireless','wds','ssid') or ''
+		bssid= uci.get('wireless','wds','bssid') or ''
+
+		chanel= uci.get('wireless','wds','channel') or 11
+		encryp= uci.get('wireless','wds','encryptype') or 'none'
+	end
+
+	local flag = uci.get('dhcp','lan','ignore')
+	local flag1 = 0
+
+	-- 如果是从连接过来的数据
+
+	if datas['step'] and datas['step'] == '1' then
+		ssid = datas['ssid']
+		bssid= datas['bssid']
+		chanel = tonumber(datas['chanel'])
+		encryp= datas['encypt'] or 'none'
+		flag1 = 1
+	end
+%>
+<div class='wdsoptPanel'>
+	<div class='setup_head'>
+		<h4>无线中继</h4>
+		<a class='setup_return' href='javascript:void(0)'><span class='setup_return_img'></span>&nbsp;返回</a>
+		<div class='clr'></div>
+		<div class='bottom_line'>
+		</div>
+	</div>
+	<div class='wdsoptmain'>
+		<div class='wdsoptcontent'>
+			<ul>
+				<% if tostring(stat) ==  '1' then %>
+				<li>
+					<span class='wdsopt_left'>无线中继开关:</span>
+					<div class='wdsopt_right wdsopt_turn'>
+						<input checked='checked' class='wdsturn' type='radio' name='wdsturn' value='start'>&nbsp;开启&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type='radio' class='wdsturn' name='wdsturn' value='stop'>&nbsp;关闭	
+					</div>
+				</li>
+				<li class='wdsoptturn1' style='display:none'>
+					<div class='wdsopt_right wdsoptturn'>
+						<span class='wdsstart_mention wdstop_mention'></span>
+						<a href='javascript:void(0)' class='subbtn wdstop'><b>保存</b></a>
+					</div>					
+				</li>				
+				<% else %>
+					<% if datas['step'] and datas['step'] == '1' then %>
+						<li>
+							<span class='wdsopt_left'>无线中继开关:</span>
+							<div class='wdsopt_right wdsopt_turn'>
+								<input checked='checked' class='wdsturn' type='radio' name='wdsturn' value='start'>&nbsp;开启&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<input  type='radio' class='wdsturn' name='wdsturn' value='stop'>&nbsp;关闭
+							</div>
+						</li>
+						<li class='wdsoptturn1' style='display:none;'>
+							<div class='wdsopt_right wdsoptturn'>
+								<span class='wdsstart_mention wdstop_mention'></span>
+								<a href='javascript:void(0)' class='subbtn wdstop'><b>保存</b></a>
+							</div>					
+						</li>						
+					<% else %>
+						<li>
+							<span class='wdsopt_left'>无线中继开关:</span>
+							<div class='wdsopt_right wdsopt_turn'>
+								<input class='wdsturn' type='radio' name='wdsturn' value='start'>&nbsp;开启&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<input checked='checked' type='radio' class='wdsturn' name='wdsturn' value='stop'>&nbsp;关闭
+							</div>
+						</li>
+						<li class='wdsoptturn1'>
+							<div class='wdsopt_right wdsoptturn'>
+								<span class='wdsstart_mention wdstop_mention'></span>
+								<a href='javascript:void(0)' class='subbtn wdstop'><b>保存</b></a>
+							</div>					
+						</li>
+					<% end %>
+				<% end %>
+			</ul>
+			<% if tostring(stat) ==  '1' or  (datas['step'] and datas['step'] == '1') then%>
+			<div class='wdsoptturnon'>
+			<%else%>
+			<div class='wdsoptturnon' style='display:none;'>
+			<%end%>	
+				<ul>
+					<li><span class='wdsopt_left'>（桥接）的SSID:</span><input type='text' id='wds_ssid' class='wdsopt_right wdsopt_input' value='<%=ssid%>'></li>
+					<li><span class='wdsopt_left'>（桥接）的BSSID:</span><input type='text' id='wds_bssid' class='wdsopt_right wdsopt_input' value='<%=bssid%>'></li>
+					<li><span class='wdsopt_left'></span><span class='wdsopt_right wdspan'>例如 : 00:1D:0F:11:22:33</span></li>
+					<li>
+						<span class='wdsopt_left'>信道:</span>
+						<select class='wdsopt_right wdsoptselect wds_chanel'>
+							<%
+								for i=1,14,1 do
+									if tostring(i) == tostring(chanel) then%>
+										<option value='<%=i%>' selected="selected"><%=i%></option>
+									<%else%>
+										<option value='<%=i%>'><%=i%></option>
+									<%end%>
+								<%end
+							%>
+						</select>
+					</li>
+					<li>
+						<span class='wdsopt_left'></span>
+						<a href='javascript:void(0)' id='wdslist' class='subbtn1 wdsoptbegin'><b>扫描</b></a>
+					</li>
+					<li>
+						<span class='wdsopt_left'>密钥类型:</span>
+						<select class='wdsopt_right wdsoptselect wds_code'>
+							<% if encryp == 'NONE' or encryp == 'none' or encryp == 'WEP' or encryp == 'wep' then %>
+							<option value='OPEN/NONE' selected='selected'>无加密</option>
+							<option value='NONE'>加密</option>
+							<% else %>
+							<option value='OPEN/NONE'>无加密</option>
+							<option value='<%=encryp%>' selected='selected'>加密</option>
+							<% end %>
+						</select>
+					</li>
+					<li><span class='wdsopt_left'>密钥:</span><input type='text' class='wdsopt_right wdsopt_input' id='code_val'></li>
+					<li>
+						<span class='wdsopt_left'>DHCP服务器:</span>
+						<div class='wdsopt_right wdsdhcp'>
+							<% if flag1 == 0 then %>
+								<% if flag == '1' then %>
+									<input checked='checked' class='wdsdhcpradio' type='radio' name='wdsdhcp' value='stop'>&nbsp;不启用&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<input type='radio' class='wdsdhcpradio' name='wdsdhcp' value='start'>&nbsp;启用								
+								<% else %>
+									<input type='radio' class='wdsdhcpradio' name='wdsdhcp' value='stop'>&nbsp;不启用&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<input checked='checked' class='wdsdhcpradio' type='radio' name='wdsdhcp' value='start'>&nbsp;启用
+								<% end %>
+							<% else %>
+									<input checked='checked' class='wdsdhcpradio' type='radio' name='wdsdhcp' value='stop'>&nbsp;不启用&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<input type='radio' class='wdsdhcpradio' name='wdsdhcp' value='start'>&nbsp;启用								
+							<% end %>
+						</div>
+					</li>
+					<li>
+						<div class='wdsopt_right wdsoptsm'>
+							<span class='wdsstart_mention'></span>
+							<a href='javascript:void(0)' class='subbtn wdsave'><b>保存</b></a>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+<script type='text/javascript'>
+	function wdstatus(){
+		var flag=$('.wds_code').val();
+		if (flag == 'OPEN/NONE')
+			$('#code_val').attr('disabled','disabled');
+		else
+			$('#code_val').removeAttr('disabled');
+	}
+
+	wdstatus();
+
+	$('.wds_code').change(function(){
+		wdstatus();
+	})
+</script>

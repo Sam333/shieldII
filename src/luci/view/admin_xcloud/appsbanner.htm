@@ -1,0 +1,212 @@
+<%
+	require "luci.sys";
+	
+	local appsetup = luci.sys.exec('/usr/local/app/ReadInstallPlugin BASE')
+
+	function Split(szFullString, szSeparator)  
+		local nFindStartIndex = 1  
+		local nSplitIndex = 1  
+		local nSplitArray = {}  
+		while true do  
+		   local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)  
+		   if not nFindLastIndex then  
+		    nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))  
+		    break  
+		   end  
+		   nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)  
+		   nFindStartIndex = nFindLastIndex + string.len(szSeparator)  
+		   nSplitIndex = nSplitIndex + 1  
+		end  
+		return nSplitArray  
+	end
+
+	local applength = string.len(appsetup)
+
+	local appsetupdata = {}
+	
+	if applength ~= 3 then
+		appsetupdata = Split(appsetup,"////")
+	end
+	local hasinstall = ""
+	local tmp = {}
+
+	local showsetuped = {}
+	local count = #appsetupdata
+
+	for i,v in pairs (appsetupdata) do
+		tmp = Split(v,",")
+		table.insert(showsetuped,tmp)
+
+		if (i ~= count) then
+			hasinstall = hasinstall .. tmp[1] .. "|||"
+		else
+			hasinstall = hasinstall .. tmp[1]
+		end
+	end
+%>
+
+
+<h1>如意云应用</h1>
+<div class='plugins'>
+	<a href='javascript:void(0)' class="movebox leftmove" rel="l" p='0'></a>
+	<div class='pluginsline'>
+		<a href='<%=pcdata(build_url("admin/xcloud/app_xcloud"))%>' class='xcloud ap'>
+			<b>小云</b>
+		</a>
+		<a href='javascript:void(0)' class='shut ap'>
+			<b>小云开关机</b>
+		</a>
+		<a href='javascript:void(0)' class='video ap'>
+			<b>视频监控</b>
+		</a>
+		<%
+			for i,v in pairs(showsetuped) do
+				if string.len(v[1]) ~= 5 then%>
+				<a href='<%=pcdata(luci.dispatcher.build_url("admin/xcloud/pluginssetup"))%>?path=<%=v[6]%>' rel='<%=v[1]%>' class='ap appplugins' style="background: url('<%=pcdata(luci.dispatcher.build_url("admin/xcloud/showimg"))%>?id=<%=v[1]%>')"><b><%=v[2]%></b></a>
+			<%
+				end
+			end
+		%>
+		
+		<script type='text/javascript'>
+			function moveTask(left,total){
+				var left_not = "url('<%=media%>/left_button_not.png') no-repeat center";
+				var left_normal = "url('<%=media%>/left_button.png') no-repeat center";
+				var left_click	= "url('<%=media%>/left_button_click.png') no-repeat center";
+
+				var right_not = "url('<%=media%>/right_button_not.png') no-repeat center";
+				var right_normal = "url('<%=media%>/right_button.png') no-repeat center";
+				var right_click	= "url('<%=media%>/right_button_click.png') no-repeat center";			
+
+				if (left == 0){
+					//$('.leftmove').css('display','block');
+					$('.leftmove').css('background',left_not);
+					$('.leftmove').hover(function(){
+						$(this).css('background',left_not)
+					})
+
+					$('.rightmove').css('background',right_normal);
+					$('.rightmove').hover(function(){
+						$(this).css('background',right_click)
+					},function(){
+						$(this).css('background',right_normal)
+					})
+				}else if(left == total){
+					$('.leftmove').css('background',left_normal);
+					$('.leftmove').hover(function(){
+						$(this).css('background',left_click)
+					},function(){
+						$(this).css('background',left_normal)
+					})				
+					$('.rightmove').css('background',right_not);
+					$('.rightmove').hover(function(){
+						$(this).css('background',right_not)
+					})
+				}else{
+					$('.rightmove').css('background',right_normal);
+					$('.leftmove').css('background',left_normal);
+					$('.rightmove').hover(function(){
+						$(this).css('background',right_click)
+					},function(){
+						$(this).css('background',right_normal)
+					})
+					$('.leftmove').hover(function(){
+						$(this).css('background',left_click)
+					},function(){
+						$(this).css('background',left_normal)
+					})								
+				}
+
+				$('.rightmove').attr('p','0');
+				$('.leftmove').attr('p','0');			
+			}
+
+			var o = "<%=hasinstall%>"
+
+			
+			$.getJSON("http://r.xcloud.cc/router/index.php?m=Index&a=checkInstall1&callback=?",{ids:o},function(json){
+				str = eval(json);
+
+				n = str.length;
+
+				var tmp = "";
+
+				for (var i=0;i<n;i++)
+				{	
+					tmp = "<a href='javascript:void(0)' rel='"+json[i].appid+"' class='ap' style='background:url("+json[i].icon+")'><b>"+json[i].name+"</b></a>";
+
+					$('.pluginsline').append(tmp);
+				}
+
+				var apnumber = $('.ap').length;
+				
+				if (apnumber <= 6){
+					$('.rightmove').css('background',"url('<%=media%>/right_button_not.png') no-repeat center");
+				}
+
+				// 滑块处理
+				$('.movebox').live('click',function(){
+					if (apnumber <= 6){
+						return false;
+					}
+
+					var o = $(this);
+
+					if ($('.rightmove').attr('p') == '1' || $('.leftmove').attr('p') == '1'){
+						return false;
+					}
+
+					$('.rightmove').attr('p','1');
+					$('.leftmove').attr('p','1');
+
+					var toward = $(this).attr('rel');
+					var curleft = parseInt($('.pluginsline').css('left'));
+					var totalwidth = parseInt(apnumber*153);
+					//alert(totalwidth);
+					var stdwidth = 0;
+					var nowleft = 0;
+					//alert(totalwidth);
+					var tmpnum = 0;
+					var leftnum = 0;
+
+
+					if (toward == 'l'){
+						nowleft = curleft + 153;
+						
+						if (nowleft > 0){
+							$('.rightmove').attr('p','0');
+							$('.leftmove').attr('p','0');					
+							return false;
+						}
+						$(this).css('background',"url('<%=media%>/left_button_click.png') no-repeat center");
+						$('.pluginsline').animate({left:nowleft+'px'},"1000","",function(){
+							moveTask(nowleft,stdwidth);
+						});
+					}else{
+						nowleft = curleft - 153;
+						
+						tmpnum = (Math.abs(nowleft))/153;
+						leftnum = apnumber - tmpnum;
+						//alert(leftnum);
+						if (leftnum < 6){
+							$('.rightmove').attr('p','0');
+							$('.leftmove').attr('p','0');					
+							return false;
+						}
+
+						$(this).css('background',"url('<%=media%>/right_button_click.png') no-repeat center");
+						$('.pluginsline').animate({left:nowleft+'px'},"1000","",function(){
+							if (leftnum == 6){
+								moveTask(100,100);
+							}
+						});
+					}
+				})
+			});
+
+
+		</script>
+	</div>
+	<div class='clr'></div>
+	<a href='javascript:void(0)' class="movebox rightmove" rel="r" p='0'></a>
+</div>

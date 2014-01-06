@@ -1,0 +1,116 @@
+<% 
+	require 'luci.template' 
+	require 'luci.sys'
+	require 'io'
+
+	function Split(szFullString, szSeparator)  
+		local nFindStartIndex = 1  
+		local nSplitIndex = 1  
+		local nSplitArray = {}
+		while true do  
+		   local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)  
+		   if not nFindLastIndex then  
+		    nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))
+		    break  
+		   end  
+		   nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)
+		   nFindStartIndex = nFindLastIndex + string.len(szSeparator)
+		   nSplitIndex = nSplitIndex + 1  
+		end  
+		return nSplitArray  
+	end
+
+	-- 先执行连接 创建文件
+	luci.sys.exec('/usr/local/localshell/wds scan')
+
+	local f=io.open('/tmp/wds_scan_result.txt','r')
+
+	local num=0
+	local tmp={}
+	local tmp1={}
+	local tmp2={}
+
+	function formatstr(str)
+		local i=string.gsub(str,"(%s%s+)","//////")
+		local tmp=Split(i,"//////")
+
+		if tmp[2] ~= nil then
+			return tmp
+		end
+		
+		return false
+	end
+
+	local data = {}
+
+	for i in f:lines() do
+		num = num + 1
+		if num > 2 then
+			tmp=formatstr(i)
+			if type(tmp) == 'table' then
+				tmp1 = {}
+				if tonumber(tmp[5]) == nil then
+					tmp2 = {}
+					tmp2 = Split(tmp[4]," ")
+					tmp[4] = tmp2[1]
+					tmp[5] = tmp2[2]
+				end
+
+				table.insert(tmp1,tmp[1])
+				table.insert(tmp1,tmp[2])
+				table.insert(tmp1,tmp[3])
+				table.insert(tmp1,tmp[4])
+				table.insert(tmp1,tmp[5])
+
+				table.insert(data,tmp1)
+			end
+		end
+	end
+
+	f:close()
+%>
+<div class='wdslistPanel'>
+	<div class='setup_head'>
+		<h4>扫描列表</h4>
+		<a class='wdsreturn' id='wdsopt' href='javascript:void(0)'><span class='setup_return_img'></span>&nbsp;返回</a>
+		<div class='clr'></div>
+		<div class='bottom_line'>
+		</div>
+	</div>
+	<div class='wdsoptmain'>
+		<div class='wdslisttitle'>
+			<h4>扫描到的AP信息如下:</h4>
+			<p>AP数目: <%=#data%></p>
+		</div>
+		<div class='wdstb'>
+			<table cellpadding=0 cellspacing=0 class='wdslisttb'>
+				<tr>
+					<th style='width:40px;'>ID</th>
+					<th style='width:110px;'>SSID</th>
+					<th style='width:118px;'>BSSID</th>
+					<th style='width:70px'>信号强度</th>
+					<th style='width:38px'>信道</th>
+					<th style='width:132px'>加密类型</th>
+					<th>选择</th>
+				</tr>
+				<%
+				local type = ''
+				for i,v in ipairs(data) do
+					type = ''
+					if (i/2) == 0 then
+						type = "class='even'"
+					end %>
+					<tr <%=type%>>
+						<td style='width:40px;'><%=i%></td>
+						<td style='width:110px;'><div style='width:100px;overflow:hidden'><%=v[2]%></div></td>
+						<td style='width:118px;'><%=v[3]%></td>
+						<td style='width:70px'><%=v[5]%>dB</td>
+						<td style='width:38px'><%=v[1]%></td>
+						<td style='width:132px'><div style='width:120px;overflow:hidden'><%=v[4]%></div></td>
+						<td><a href='javascript:void(0)' class='wdsconect' id='wdsopt'>连接</a></td>
+					</tr>
+				<%end%>							
+			</table>
+		</div>
+	</div>
+</div>

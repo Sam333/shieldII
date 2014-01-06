@@ -1,0 +1,253 @@
+<html><head>
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/style.css?v=1015" type="text/css">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="format-detection" content="telephone=no">
+<title>HiWiFi 路由器</title>
+
+<!-- 流量：start -->
+<style>
+body {
+padding: 0;
+margin: 0 0;
+font: 12px sans-serif;
+}
+
+table {
+empty-cells: show;
+padding: 0;
+margin: 0 0;
+}
+td {
+font: 12px sans-serif;
+}
+   
+#container {
+background: #fff;
+border-spacing: 0;
+width: 100%;
+margin: 0px;
+}
+
+#content {
+padding: 5px 4px 20px 4px;
+vertical-align: top;
+width: 760px;
+}
+#ident {
+color: #aaa;
+text-align: left;
+padding-right: 5px;
+font-size: 11px;
+}
+ 
+#refresh-spinner {
+visibility: hidden;
+vertical-align: middle;
+}
+
+ul.tabs,
+#tabs {
+padding: 0;
+margin: 0;
+}
+ul.tabs li,
+#tabs li {
+display: inline;
+list-style: none;
+}
+ul.tabs a,
+#tabs a {
+width: 90px;
+display: block;
+float: left;
+padding: 3px 0;
+margin: 0 3px 0 0;
+text-align: center;
+text-decoration: none;
+color: #888;
+height: 15px;
+background: #f3f3f3;
+}
+ul.tabs a.active,
+#tabs a.active {
+background: #36AAD6;
+color: #fff;
+font-weight: bold;
+}
+ul.tabs a:hover,
+#tabs a:hover {
+background: #5fb8dc;
+color: #fff;
+font-weight: bold;
+}
+
+#txt {
+width: 550px;
+white-space: nowrap;
+}
+#bwm-controls {
+text-align: right;
+margin-right: 5px;
+margin-top: 5px;
+float: right;
+visibility: hidden;
+width:180px;
+}
+</style>
+<script type="text/javascript" src="<%=resource%>/turbo/traffic.js?v=1015"></script>
+<script type="text/javascript">
+function testSVG(){
+    var ns = {'svg': 'http://www.w3.org/2000/svg'};
+    return !!document.createElementNS && !!document.createElementNS(ns.svg, 'svg').createSVGRect;
+}
+nvram = {
+	wan_ifname: 'vlan1',
+	wan2_ifname: 'vlan2',
+	lan_ifname: 'br-lan',
+	wl_ifname: 'wlan0',
+	tun_ifname:'',
+	wan_proto: 'dhcp',
+	web_svg: testSVG()?'1':'0',
+	rstats_colors: '',
+	wan_iface: 'wlan1',
+	wan2_iface: 'ppp1',
+	wan3_iface: '',
+	wan4_iface: '',
+	web_mx: 'status,bwm',
+	web_pb: ''};
+
+var cprefix = 'bw_r';
+var updateInt = 2;
+var updateDiv = updateInt;
+var updateMaxL = 300;
+var updateReTotal = 1;
+var prev = [];
+var debugTime = 0;
+var avgMode = 0;
+var wdog = null;
+var wdogWarn = null;
+var ref = new TomatoRefresh('/cgi-bin/turbo/;stok=7c961b9c10c8726ff3f98f7c7863500e/admin_web/traffic/update?lanif=br-lan&wlanif=wlan0&wanif=wlan1&vpnif=', 'exec=netdev', 2);
+ref.stop = function() {
+	this.timer.start(1000);
+}
+ref.refresh = function(text) {
+	var c, i, h, n, j, k;
+	watchdogReset();
+	++updating;
+	try {
+		netdev = null;
+		eval(text);
+		n = (new Date()).getTime();
+		if (this.timeExpect) {
+			if (debugTime) E('dtime').innerHTML = (this.timeExpect - n) + ' ' + ((this.timeExpect + 2000) - n);
+			this.timeExpect += 2000;
+			this.refreshTime = MAX(this.timeExpect - n, 500);
+		}else {
+			this.timeExpect = n + 2000;
+		}	
+		for (i in netdev) {
+			c = netdev[i];
+			if ((p = prev[i]) != null) {
+				h = speed_history[i];
+				h.rx.splice(0, 1);
+				h.rx.push((c.rx < p.rx) ? (c.rx + (0xFFFFFFFF - p.rx)) : (c.rx - p.rx));
+				h.tx.splice(0, 1);
+				h.tx.push((c.tx < p.tx) ? (c.tx + (0xFFFFFFFF - p.tx)) : (c.tx - p.tx));
+			} else if (!speed_history[i]) {
+				speed_history[i] = {};
+				h = speed_history[i];
+				h.rx = [];
+				h.tx = [];
+				for (j = 300; j > 0; --j) {
+					h.rx.push(0);
+					h.tx.push(0);
+				}	
+				h.count = 0;
+			}
+			prev[i] = c;
+		}
+		loadData();
+	}catch (ex) {
+	}
+	--updating;
+}
+
+function watchdog(){
+	watchdogReset();
+	ref.stop();
+	wdogWarn.style.display = '';
+}
+function watchdogReset(){
+	if (wdog) clearTimeout(wdog)
+	wdog = setTimeout(watchdog, 10000);
+	wdogWarn.style.display = 'none';
+}
+function init(){
+	speed_history = [];
+	initCommon(2, 1, 1);
+	wdogWarn = E('warnwd');
+	watchdogReset();
+	ref.start();
+}
+</script>
+<!-- 流量：end-->
+
+</head>
+<body onload="init()">
+ <div class="title">
+	<h2>实时流量</h2>
+</div>
+		<!-- 流量table : start-->
+		<table id="container" cellspacing="0">
+			<tbody><tr>
+				<td id="content">
+				<div id="rstats">
+					<div id="tab-area"><ul id="tabs"><li><a href="javascript:tabSelect('speed-tab-br-lan')" id="speed-tab-br-lan" class=" active"><span title="br-lan">局域网 </span></a></li><li><a href="javascript:tabSelect('speed-tab-wlan0')" id="speed-tab-wlan0"><span title="wlan0">无线</span></a></li><li><a href="javascript:tabSelect('speed-tab-wlan1')" id="speed-tab-wlan1"><span title="wlan1">WAN口</span></a></li></ul><div id="tabs-bottom"></div></div>
+					<script type="text/javascript">
+					if (nvram.web_svg != '0') {
+						// without a div, Opera 9 moves svgdoc several pixels outside of <embed> (?)
+						W("<div style='border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;visibility:hidden;padding:0;margin:0' id='graph'><embed src='<%=resource%>/turbo/traffic.svg?1.29' style='width:760px;height:300px;margin:0;padding:0' type='image/svg+xml' pluginspage='http://www.adobe.com/svg/viewer/install/'></embed></div>");
+					}
+					</script><div style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(240, 240, 240); border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: rgb(240, 240, 240); visibility: visible; padding: 0px; margin: 0px;" id="graph"><embed src="<%=resource%>/turbo/traffic.svg?1.29" style="width:760px;height:300px;margin:0;padding:0" type="image/svg+xml" pluginspage="http://www.adobe.com/svg/viewer/install/"></div>
+				</div>
+				<div>
+					<div id="bwm-controls" style="visibility: visible;">
+						<small>(10分钟流量,每2秒刷新)</small><br>
+						<span id="warnwd" style="display: none;">连接失败...&nbsp;</span>
+						<span id="dtime"></span>
+						<img src="<%=resource%>/turbo/web/js/artDialog/skins/icons/loading.gif" id="refresh-spinner" onclick="javascript:debugTime=1" style="visibility: visible;">
+						
+						<span style="display: none;" id="drawcolor">Blue &amp; Orange »</span>
+						<span style="display: none;" id="drawrev"></span>
+					</div>
+					<table border="0" cellspacing="2" id="txt">
+						<tbody><tr>
+							<td width="8%" align="right" valign="top"><b style="border-bottom-color: rgb(0, 62, 186); border-bottom-width: 2px; border-bottom-style: dashed;" id="rx-name">下载</b></td>
+							<td width="15%" align="right" valign="top"><span id="rx-current">1.70 <small>kbps</small></span></td>
+							<td width="8%" align="right" valign="top" style="display: none"><b>平均</b></td>
+							<td width="15%" align="right" valign="top" id="rx-avg" style="display: none">0.26 <small>kbps</small></td>
+							<td width="8%" align="right" valign="top"><b>最大</b></td>
+							<td width="15%" align="right" valign="top" id="rx-max">36.39 <small>kbps</small></td>
+							<td width="8%" align="right" valign="top" style="display: none"><b>合计</b></td>
+							<td width="14%" align="right" valign="top" id="rx-total" style="display: none">18.92<small> KB</small></td>
+							<td>&nbsp;</td>
+						</tr>
+						<tr>
+							<td width="8%" align="right" valign="top"><b style="border-bottom-color: rgb(255, 144, 0); border-bottom-width: 2px; border-bottom-style: dashed;" id="tx-name">上传</b></td>
+							<td width="15%" align="right" valign="top"><span id="tx-current">3.14 <small>kbps</small></span></td>
+							<td width="8%" align="right" valign="top" style="display: none"><b>平均</b></td>
+							<td width="15%" align="right" valign="top" id="tx-avg" style="display: none">0.22 <small>kbps</small></td>
+							<td width="8%" align="right" valign="top"><b>最大</b></td>
+							<td width="15%" align="right" valign="top" id="tx-max">23.07 <small>kbps</small></td>
+							<td width="8%" align="right" valign="top" style="display: none"><b>合计</b></td>
+							<td width="14%" align="right" valign="top" id="tx-total" style="display: none">16.28<small> KB</small></td>
+							<td>&nbsp;</td>
+						</tr>
+					</tbody></table>
+				</div>
+				</td>
+			</tr>
+		</tbody></table>
+		<!-- 流量table : end -->
+
+</body></html>

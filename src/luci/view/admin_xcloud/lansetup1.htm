@@ -1,0 +1,108 @@
+<%
+	-- mac默认地址
+	require "luci.sys"
+	local arptable = luci.sys.net.arptable() or {}
+	local mac={}
+	for _,v in pairs (arptable) do
+		table.insert(mac,v["HW address"])
+	end
+
+	-- 获取静态地址列表
+	local uci = require "luci.model.uci".cursor()
+
+	local dhcpdevs = {}
+
+	function checkads(s)
+		table.insert(dhcpdevs,s)
+	end
+
+	uci:foreach("dhcp","host",checkads)
+
+%>
+<div class='lan_opt'>
+	<div class='setup_head'>
+		<h4>内网设置</h4>
+		<a class='setup_return' href='javascript:void(0)'><span class='setup_return_img'></span>&nbsp;返回</a>
+		<div class='clr'></div>
+		<div class='bottom_line'>
+		</div>
+	</div>
+
+	<div class='lan_setup'>
+		<div class='foredit'>
+			<span class='lan_type_title'>静态IP设备列表</span>
+			<a class='lan_edit'><b>编辑</b></a>
+			<div class='clr'></div>
+		</div>
+		<div class='lan_static_setup'>
+			<table class='lan_static_dev' cellpadding=0 cellspacing=0>
+				<tr>
+					<th>主机名</th>
+					<th>MAC地址</th>
+					<th>内网IP地址</th>
+				</tr>
+				<%
+					for i,v in pairs(dhcpdevs) do%>
+					<tr>
+						<%for k,val in pairs(v) do%>
+					<% if k == "name" then %>
+						<td><input class='static_name' type='text' disabled='disabled' value='<%=val%>'></td>
+					<% end %>
+					<% if k == "mac" then%>
+						<td>
+							<span class='macusual'><%=val%></span>
+							<select class='macadds'>
+								<option val='<%=val%>'><%=val%></option>
+								<%
+									for _,v in pairs(mac) do%>
+										<option val='<%=v%>'><%=v%></option>
+									<%end
+								%>
+								<option val='custom'>手动输入MAC地址</option>
+							</select>
+						</td>
+					<% end %>
+					<% if k == "ip" then%>
+						<td><input class='static_ip' type='text' disabled='disabled' value='<%=val%>'></td>
+						<td class='delete'><span></span></td>
+					<% end %>
+						<%end%>
+					</tr>
+					<%end
+				%>
+			</table>
+		</div>
+		<a href='javascript:void(0)' class='addstatic'><span class='addimg'></span><span class='addword'>添加设备</span></a>
+		<a href='javascript:void(0)' class='savestatic'><b>保存</b></a>
+	</div>
+</div>
+<script type='text/javascript'>
+	$('.lan_edit').live('click',function(){
+		$(this).hide();
+		$('.addstatic').css('display','block');
+		$('.savestatic').css('display','block');
+		$('.delete').css('display','block');
+
+		$('.static_name').css({'border':'1px solid #ccc','background':'white'});
+		$('.static_name').removeAttr('disabled');
+
+		$('.static_ip').css({'border':'1px solid #ccc','background':'white'});
+		$('.static_ip').removeAttr('disabled');
+
+		$('.macusual').hide();
+		$('.macadds').show();
+	})
+
+	$('.savestatic').live('click',function(){
+		$('.lan_edit').show();
+		$('.addstatic').css('display','none');
+		$('.savestatic').css('display','none');
+		$('.delete').css('display','none');
+		$('.static_name').attr('disabled','disabled').css({'border':'none','background':'none'});
+	
+		$('.static_ip').attr('disabled','disabled').css({'border':'none','background':'none'});	
+	
+		$('.macusual').show();
+		$('.macadds').hide();
+	})
+</script>

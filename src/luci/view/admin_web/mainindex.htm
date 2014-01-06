@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="x-ua-compatible" content="IE=9" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="format-detection" content="telephone=no" />
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+<meta http-equiv="expires" content="Wed, 26 Feb 1997 08:21:57 GMT">
+
+<title>SHIELD后台</title>
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/style.css?v=1015" type="text/css"/>
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/retain.css?v=1015" type="text/css" media="only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2)" />
+
+<style type="text/css">
+a{ behavior:url(<%=resource%>/turbo/web/images/blur.htc);} 
+#weixin_img {position: absolute;margin-top: 318px;margin-left: 315px; display:none; cursor:pointer;}
+</style>
+
+<!--[if lt IE 9]>
+<script type="text/JavaScript" src="<%=resource%>/turbo/web/js/curvycorners.src.js?v=1015"></script>
+<![endif]-->
+</head>
+
+<body id="home">
+
+<div id="header">
+	<div class="wrap">
+		<p class="top_menu">
+			<a href="#" id="system_config">修改密码</a>
+			<span class="pipe">|</span>
+			<a href="<%=REQUEST_URI%>/logout">退出</a>
+		</p>
+		<h1><span id="logo">Shield</span></h1>
+	</div>
+</div>
+
+<div id="content">
+	<div class="wrap">
+		<div id="side">
+			<ul id="nav">
+				<li class="selected"><a href="#" id="home"><span>主 页</span></a></li>
+				<li><a href="#" id="state"><span>系统状态</span></a></li>
+				<li><a href="#" id="options"><span>高级设置</span></a></li>
+				<li style="background:none;"><a href="" id="mobile" target="_blank"><span>外设管理</span></a></li>
+			</ul>
+		</div>
+
+		<div id="main">
+			<div id="map">
+				<div class="stream"></div>
+				<div class="alert-icon">
+					<i class="network-alert func_alert" id="network-alert" title="" style="display:none;"></i>
+					<i class="wifi-alert func_alert" id="wifi-alert" title="" style="display:none;"></i>
+				</div>
+				<a href="#" id="set_wifi" class="guide_s">
+					<span class="txt">无线设置</span><span class="icon"></span>
+				</a>
+				<a href="#" id="set_network" class="ok guide_s">
+					<span class="txt">外网设置</span><span class="icon"></span>
+				</a>
+			</div>
+
+			<p id="devices">
+				<a href="#">
+					<span>►</span>已有<em>
+					<img src="<%=resource%>/turbo/web/js/artDialog/skins/icons/loading.gif" id="devices_loading" alt="链接设备数" border="0" style="position:relative; top:3px;"/></em>台设备连接到路由器
+				</a>
+			</p>
+
+			<a href="#" id="reboot"><span>重启</span></a>
+		</div>
+	</div>
+</div>
+
+<%+footer%>
+
+<input type="hidden" value="0" id="guide_mode">
+
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery-1.8.1.min.js?v=1015"></script>
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/artDialog/jquery.artDialog.js?skin=blueskin"></script>
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery.cookie.min.js?v=1015"></script>
+<script type="text/javascript" src="<%=resource%>/turbo/interface.js?v=1015"></script>
+<script src="<%=resource%>/turbo/web/js/artDialog/plugins/iframeTools.source.js?v=1015"></script>
+<script src="<%=resource%>/turbo/web/js/util.js?v=1015"></script>
+
+<script type="text/javascript">
+	var luci_url_base = "<%=REQUEST_URI%>/shield/mainindex";
+	
+	function is_internet_connect(){
+		var result = false;
+		var request_date = {}; 
+		$.getJSON("<%=controller%>/admin/shield/internet_connection_status",request_date,function(rsp) 
+		{ 
+			console.log("is_internet_connect")
+			console.log(rsp);
+			result = rsp.isconn;
+		})
+		return result;
+	}
+
+	$(function(){
+		/* 	无线设置 */
+		$("#set_wifi").click(function(){
+			open_windows("set_wifi");
+		})		
+		
+		/* 	外网设置 */
+		$("#set_network").click(function(){
+			var guide_mode = $("#guide_mode").val();
+			if(guide_mode == 1){
+				open_windows("set_network_autotype");
+			} else {
+				open_windows("set_network");
+			}
+		})	
+		
+		/* 外部设备管理 */
+		$("#speeder,#mobile").click(function(){
+			open_windows("application");
+		})
+		
+		/* 系统状态 */
+		$("#state").click(function(){
+			open_windows("state");
+		})	
+		
+		/* 高级设置 */
+		$("#options").click(function(){
+			open_windows("options");
+		})
+		
+		$("#traffic_info").click(function(){
+			open_windows("traffic_info");
+		})
+		/* 	修改密码*/
+		$("#system_config").click(function(){
+			open_windows("system_config");
+		})
+		
+		/* 	列无线设备列表*/
+		$("#devices").click(function(){
+			open_windows("devices");
+		})
+		
+		/* 重新启动 */
+		$("#reboot").click(function(){
+			reboot_window();
+		});
+	})
+	
+	function reboot_window(){
+		art.dialog({
+			title:false,
+		    content: '是否确定重启路由器，重启将断开和路由器的连接！',
+		    icon: 'warning',
+		    id: "wating_box",
+		    ok: function(){
+		    	this.close();
+	    		do_restart_router("重启路由器");
+	    		
+		    	$.getJSON("<%=controller%>/admin/shield/reboot",{},function(rsp) 
+		    	{
+		    		console.log("reboot_window");
+		    		console.log(rsp);
+		    		if(rsp.code==0){
+		    			
+		    		}  else {
+		    			art.dialog({icon:"error",title:false,content:"重启失败"}).lock().time(4);
+			    		this.close();
+		    		}
+		    	});
+		        return false;
+		    },
+		    okVal: "现在重启", 
+		    cancel: function(){
+		        this.close();
+		        return false;
+		    }
+		}).lock();
+	}
+	
+	/*恢复出厂设置*/
+	function reset_window(){
+		art.dialog({
+			title:false,
+		    content: '是否确定恢复出厂设置，将断开和路由器的连接！',
+		    icon: 'warning',
+		    id:"wating_box",
+		    ok: function(){
+		    	
+		    	this.close();
+		    	do_restart_router("恢复出厂设置", "192.168.66.1", true);
+		    	
+		    	$.getJSON("<%=controller%>/admin/shield/action_flashops",{},function(rsp) 
+		    	{
+		    		if(rsp.code==0){
+		    			
+		    		}  else {
+		    			art.dialog({icon:"error",title:false,content:"恢复出厂设置失败"}).lock().time(4);
+			    		this.close();
+		    		}
+		    	});
+		        return false;
+		    },
+		    okVal: "恢复出厂设置", 
+		    cancel: function(){
+		        this.close();
+		        return false;
+		    }
+		}).lock();
+	}
+	
+	function open_windows(act,param){
+		if(art.dialog.list['func_box']){
+			art.dialog.list['func_box'].close();
+		}
+		var guide_mode = $("#guide_mode").val();
+		if (act=="set_wifi")
+       		 {
+				art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/set_wifi"))%>', {id:"func_box", title: '无线设置',width:600, height:480, lock:true,drag: false});
+        	} else  if (act=="set_network") {
+				art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/network"))%>', {id:"func_box", title: '外网设置',width:640, height:550, lock:true,drag: false});
+      		} else  if (act=="set_network_autotype") {
+				art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/network"))%>', {id:"func_box", title: '外网设置',width:640, height:450, lock:true,drag: false});
+        	} else  if (act=="cloud") {
+			
+       		} else  if (act=="application") {
+        	} else  if (act=="state") {
+        		art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/info"))%>', {id:"func_box", title: '系统状态',width:600, height:650, lock:true,drag: false});
+       		 } else  if (act=="options") {
+		        art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/settings"))%>', {id:"func_box", title: '高级设置',width:780, height:590, lock:true,drag: false});
+	        } else  if (act=="system_config") {
+				art.dialog.open('<%=REQUEST_URI%>/modify_password', {id:"func_box", title: '修改密码',width:500, height:450, lock:true,drag: false});
+	        } else  if (act=="devices") {
+				art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/devices_list"))%>', {id:"func_box", title: '连接设备列表',width:660, height:450, lock:true,drag: false});
+	        }  else if (act=="traffic_info"){
+	        	art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/web_status"))%>', {id:"func_box", title: '实时流量',width:790, height:480, lock:true,drag: false});
+	        } else if (act=="mac_filter") {
+		        art.dialog.open('<%=pcdata(luci.dispatcher.build_url("admin/shield/settings"))%>', {id:"func_box", title: 'mac 地址访问限制',width:780, height:570, lock:true,drag: false});
+		 	} 
+	}
+</script>
+<script type="text/javascript">
+
+$(function(){
+	check_network_status();
+	setTimeout("check_network_status()",5000);
+});
+
+function do_restart_router(action_cont, return_ip, need_flash){
+	var ip;
+
+	if (typeof(return_ip) == "string") {
+		ip = return_ip;
+	} else {
+		ip = window.location.host;
+	};
+
+	var time_ts = (+new Date());
+	
+	art.dialog({id:"wating_box", icon:"warning", title:false, content:action_cont +'，等待自动连接跳转...'}).lock();
+	
+	//定时器检查路由器是否启动成功
+	setTimeout(function(){
+		autoLink("http://"+ip+"<%=resource%>/turbo/web/images/logo_130726.png",{
+			"success":function(){
+				if(art && art.dialog.list['wating_box']){
+					art.dialog.list['wating_box'].close();
+				}
+				art.dialog({icon:"succeed", id:"wating_box", title:false, content:'操作生效,重启成功！'}).lock().time(4);
+				if(need_flash){
+					window.setTimeout('window.location.href="http://'+ip+'";',3000); 
+				}
+			},"error":function(){
+				var usetime = Math.round(((+new Date()) - time_ts)/1000);
+				art.dialog.list['wating_box'].content(action_cont +", 等待自动跳转... 用时" + usetime + "秒");
+
+			},"timeout":function(){
+				if(art && art.dialog.list['wating_box']){
+					art.dialog.list['wating_box'].close();
+				}
+				art.dialog({icon:"warning",id:"wating_box",title:false,content:'自动连接路由器失败，请检查无线或者网线是否连接正确。',
+				ok:function(){
+					top.location.href = "<%=REQUEST_URI%>/shield/mainindex";
+				},
+				okVal: "手动连接", 
+				cancel: function(){
+			        this.close();
+			        return false;
+			    }
+				}).lock();
+			}},150);
+	},15000);
+}
+
+//检查网络状态
+function check_network_status(){
+	$.ajax({
+		  url: "<%=controller%>/admin/shield/network_connection_status",
+		  cache: false,
+		  dataType: "json",
+		  success: function(rsp){
+			  if(rsp){
+			  	//console.log(rsp);
+				set_wan_status(rsp.isconn);
+				set_devices_cnt(rsp.devices_cnt.length);
+				
+				if(rsp.wifi_status=='1'){	
+					if(rsp.wifi_encryption=='none'){
+						var msgs = "无线网未设置密码，有被他人盗用的风险，请关闭无线网，或设置密码。";
+						$("#wifi-alert").show().attr("title",msgs);
+					} else {
+						$("#wifi-alert").hide().attr("title","");
+					}
+				}else{
+					var msgs = "WIFI 未开启";
+					$("#wifi-alert").show().attr("title",msgs);
+				}
+			  }
+			  setTimeout("check_network_status()",5000);
+		  },
+		  error :function(){
+			  if (art.dialog.list['func_box'] || art.dialog.list['wating_box']){
+				  setTimeout("check_network_status()",1000*10);
+			  }else{
+				  art.dialog({
+						title:false,
+					    content: '无法连接到路由器，请检查网络连接情况！',
+					    icon: 'warning',
+					    ok: function(){
+					    	top.location.reload();
+					        return false;
+					    },
+					    okVal: "刷新页面 ", 
+					    cancel: function(){
+					        this.close();
+					        return false;
+					    }
+					}).lock();
+			  }
+		  }
+	});
+	return true;
+}
+
+function set_wan_status(isconn){
+	var wan_now_status = $("#network-alert").attr("title")=="";
+	if(wan_now_status==isconn){
+		return;
+	}
+	if(isconn){
+		$("#network-alert").hide().attr("title","");
+		$("#set_network").addClass("ok");
+		$(".stream").show();
+	}else{
+		$("#network-alert").show().attr("title","WAN 未连接网线或断开连接");
+		$("#set_network").removeClass("ok");
+		$(".stream").hide();
+	}
+}
+
+function set_devices_cnt(devices_cnt){
+	if(devices_cnt >0){
+		$("#devices em").html(devices_cnt);
+		$("#devices_loading").hide();
+	} else {
+		$("#devices em").html(0);
+	}
+}
+
+</script>
+
+</body>
+</html>

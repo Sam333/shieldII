@@ -1,0 +1,261 @@
+<%
+	--检查无线连接状态
+	local uci = require "luci.model.uci".cursor()
+	local ntm = require "luci.model.network"
+	ntm.init(uci)
+
+	local devices  = ntm:get_wifidevs()
+	local devs
+	local netlist = {}
+
+	for _, dev in ipairs(devices) do local nets = dev:get_wifinets()
+		local nets = dev:get_wifinets()
+		for _, net in ipairs(nets) do
+			netlist[#netlist+1] = net:id()
+		end
+	end
+
+	local netmd = require "luci.model.network".init()
+	local net = netmd:get_wifinet(netlist[1])
+	local dev = net:get_device()
+
+	local wirestatus = false
+	--[[
+	if dev and net then
+		if net:get("disabled") and net:get("disabled") == 0 then
+			wirestatus = 0
+		else
+			wirestatus = 1
+		end
+	end]]--
+	if net:get('disabled') or net:get('disabled') == 1 then
+		wirestatus = false
+	else
+		wirestatus = true
+	end
+
+	-- SSID
+	local ssid = nil
+	ssid = net:get("ssid")
+
+	-- wiretype
+	local wiretype = nil
+	local nn = netmd:get_network("wan")
+	wiretype = nn:proto()
+
+	-- wirelessSafe
+	local wireSafe = false
+	local wireSafePwd = nil
+	if net:get("encryption") == "none" then
+		wireSafe = false
+	else
+		wireSafe = true
+		wireSafePwd = net:get("key")
+	end
+%>
+
+<html>
+<head>
+
+<meta http-equiv="x-ua-compatible" content="IE=9">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="format-detection" content="telephone=no">
+
+<title>Sheild</title>
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/style.css?v=1015" type="text/css">
+<link rel="stylesheet" href="<%=resource%>/turbo/web/js/artDialog/skins/blueskin.css">
+
+<script type="text/JavaScript" src="<%=resource%>/turbo/web/js/curvycorners.src.js"></script>
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery-1.8.1.min.js"></script>
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/artDialog/jquery.artDialog.js?skin=blueskin"></script>
+<script src="<%=resource%>/turbo/web/js/artDialog/plugins/iframeTools.source.js"></script>
+<style type="text/css">
+
+#hidden_wifi_box{
+	position: absolute;
+	left: 370px;
+	top: 0px;
+	display: no;
+	background-color: #f0f0f0;
+	padding: 5px;
+	margin:0 0 0 5px;
+	display:none;
+}
+
+</style>
+</head>
+
+
+<body>
+<script type="text/javascript">//<![CDATA[
+  	function check_form(obj){
+		return true;
+	}
+//]]></script>
+
+
+<div class="title">
+	<h2>无线网络设置<i>移动无线设备接入以下“网络名称”上网 </i></h2>
+</div>
+
+<div class="content wifi_box">
+	<div class="area">
+		<div class="group">
+			<span style="padding-right:30px;color: #999;">无线网络开关</span>
+			<span class="on-off">
+				<%if wirestatus then%>
+					<button type="button" class="on">开关</button>
+				<%else%>
+					<button type="button" class="off">开关</button>
+				<%end%>
+				<img style="display:none;" id="loading3" src="<%=resource%>/turbo/web/js/artDialog/skins/icons/loading.gif">
+			</span>
+			<p class="item-txt"></p>
+		</div>
+
+		<div class="group">
+			<form method="post" onsubmit="return check_form(this)" id="form1">
+				<div id="form_box">
+					<div class="form-row" style="position:relative;">
+						<label class="label">网络名称</label>
+						<span><input class='txt-input' id="netssid" type='text' value='<%=ssid%>'></span> 
+					</div>
+
+					<div class="form-row">
+						<label class="label">安全类型</label>
+						<span>
+							<select name="encryption" class="txt-input select" id="wifi_encryption" >
+								<%if wireSafe then%>
+								<option value="psk2">强加密(WPA/WPA2个人版)</option>
+								
+								<%else%>
+								<option value="none">无加密</option>
+								<%end%>
+
+								<option value="none">无加密</option>
+								<option value="psk2">强加密(WPA/WPA2个人版)</option>
+							</select>
+						</span>
+					</div>
+
+					<div class="form-row" id="password_box" style="">
+						<label class="label">网络密码</label>
+						<span>
+							<input class='txt-input' type='text' value='<%=wireSafePwd%>' id='wirelessPass'>
+						<span>
+					</span></span></div>
+
+					<div class="form-row">
+						<!--  <p class="tips error"><span>这里显示错误提示</span></p> -->
+					</div>
+
+					<div class="button-row form-button">
+						<input type="button" value="保存 " class="btn" id="submit_btn">	
+						<input type="button" value="取消" class="btn" id="close_box">				
+						<img style="display:none;" id="loading2" src="<%=resource%>/turbo/web/js/artDialog/skins/icons/loading.gif">
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script type='text/javascript'>
+	function wiremention(word){
+		art.dialog({icon:"succeed",title:false,content:word}).lock().time(5);		
+	}
+
+	function c_gray(){
+		var v = $('#wifi_encryption').val()
+
+		if (v == "none"){
+			$('#wirelessPass').attr('disabled','disabled');
+			$('#wirelessPass').val('');
+		}else{
+			$('#wirelessPass').removeAttr('disabled');
+		}
+	}
+
+	c_gray();
+
+	$('#wifi_encryption').change(function(){
+		c_gray();
+	})
+
+	$(".on-off").click(function(){
+		var switch_b = $(".on-off").children("button");
+		var status_now = switch_b.attr("class");
+
+		if(status_now == "on"){
+			switch_b.addClass("off").removeClass("on");
+		} else if (status_now == "off"){
+			switch_b.addClass("on").removeClass("off");
+		}
+	});
+
+	$("#submit_btn").click(function(){
+		 var switch_b = $(this).children("button");
+		 var status_now = switch_b.attr("class");
+
+		 if(status_now == "on"){
+		 	wirelessstatus = "close";
+		 }
+		 else{
+		 	wirelessstatus = "open";
+		 }
+
+
+		 var wirelesstype	= $('#wifi_encryption').val()
+		 var wirelesscodetype	= $('#wifi_encryption').val()
+
+		 var wirelesspwd	= $('#wirelessPass').val()
+
+		 console.log(wirelesspwd)
+		 console.log(wirelesstype)
+		 
+		 if (wirelesstype == 'psk2' && wirelesspwd.length < 8){
+		 	wiremention('请输入8位及以上的密码');
+		 	return false;
+		 }
+
+		 var wirelessssid	= $('#netssid').val()
+		 var wirelesscode 		= $('#wirelessPass').val()
+
+		 var o = {}
+		 o = {  w_status   :   wirelessstatus,
+			 	w_ssid     :   wirelessssid,
+			 	w_type     :   wirelesstype,
+			 	w_pwd      :   wirelesspwd,
+			 	w_code_t   :   wirelesscodetype,
+			 	w_code     :   wirelesscode}
+
+		 console.log(o)
+
+		 $("#loading2").show();
+		 $("#submit_btn").attr('disabled','disabled');
+		 $("#close_box").attr('disabled','disabled');
+
+		 $('.wireless_mention').html('保存中...').stop().animate({'opacity':1},1000);
+		 $.ajax({
+		 	url:'<%=pcdata(luci.dispatcher.build_url("admin/shield/wiresetup"))%>',
+		 	method:'POST',
+		 	dataType:'json',
+		 	data:o,
+		 	timeout:30000,
+		 	success:function(json){
+		 		$("#loading2").hide();
+				window.parent.art.dialog.list['func_box'].close();
+		 	},
+		 	error:function(){
+		 		$("#loading2").hide();
+		 		window.parent.art.dialog.list['func_box'].close();
+		 	}
+		 })
+	})
+	$("#close_box").click(function(){
+		window.parent.art.dialog.list['func_box'].close();
+	})
+</script>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">		
+		<link rel='stylesheet' type="text/css" href="<%=media%>/xcloud.css?<%=os.time()%>">
+		<script type='text/javascript' src="<%=resource%>/tinybox.js"></script>
+		<script type='text/javascript' src="<%=resource%>/jquery-1.8.2.min.js"></script>
+		<script type='text/javascript' src="<%=resource%>/jquery.form.js"></script>
+		<script type="text/javascript" src="<%=resource%>/xhr.js"></script>
+		<script type="text/javascript" src="<%=resource%>/xcloud.js"></script>
+	</head>
+
+	<body>
+		<div class='nav'>
+			<div class='nav_head common'>
+				<a href='http://r.xcloud.cc' target='_blank' class='logo'></a>
+				<span class='version'><%=pcdata(luci.version.xcloud_show)%></span>
+				<a href='javascript:void(0)' id='getupdate' class='getupdate'><span class='getupdate_def'></span></a>
+				<span class='updatewords'></span>
+				<span class='prompt'></span>
+			    <script type='text/javascript'>
+			    	getVersion('<%=pcdata(luci.version.xcloud_update)%>');
+			    </script>				
+			</div>
+		</div>

@@ -1,0 +1,119 @@
+<%
+	require "luci.sys"
+	function Split(szFullString, szSeparator)  
+		local nFindStartIndex = 1  
+		local nSplitIndex = 1  
+		local nSplitArray = {}  
+		while true do  
+		   local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)  
+		   if not nFindLastIndex then  
+		    nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))  
+		    break  
+		   end  
+		   nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)  
+		   nFindStartIndex = nFindLastIndex + string.len(szSeparator)  
+		   nSplitIndex = nSplitIndex + 1  
+		end  
+		return nSplitArray  
+	end
+
+	local res=''
+	local res1=''
+	local dev_name=''
+	local mounted=''
+	local mountdev=''
+	local devs={}
+	local tmp = {}
+	local size=0
+
+	if status~=5 then
+		res=luci.sys.exec('/usr/local/localshell/usbdevice')
+		res1=Split(res,"/////")
+		dev_name=res1[1] or ''
+		mounted=res1[2] or ''
+		mountdev=res1[3] or ''
+		devs=Split(res1[4],"////")
+	end
+%>
+<div class='usb_opt'>
+	<div class='setup_head'>
+		<h4>USB管理</h4>
+		<a class='setup_return' href='javascript:void(0)'><span class='setup_return_img'></span>&nbsp;返回</a>
+		<div class='clr'></div>
+		<div class='bottom_line'>
+		</div>
+	</div>
+	<%if status==5 then%>
+	<div class='usb_setup'>
+		<p class='no_usb_support'>未发现USB存储设备</p>
+	</div>
+	<% else %>
+	<div class='usb_setupnew'>
+		<div class='usb_devadd'>
+			<h4 rel='0'><%=dev_name%></h4>
+			<p class='ndevhasopt'>已挂载</p>
+			<a href='javascript:void(0)' class='subbtn ndevremove'><b>安全拔出</b></a>
+			<p class='ndevremoving'>卸载中...</p>
+			<p class='ndevremovefailed'>卸载失败</p>
+			<%
+				local mountlen=string.len(res1[2])
+				if mountlen==9 then
+			%>
+				<script type='text/javascript'>
+					$('.ndevhasopt').hide();
+					$('.ndevremove').css('display','none');
+				</script>
+			<% else  %>
+				<script type='text/javascript'>
+					$('.ndevhasopt').show();
+					$('.ndevremove').css('display','block');
+					$('.ndevremove').attr('rel','<%=mountdev%>')
+				</script>
+			<% end%>
+		</div>
+		<div class='usb_devcontent'>
+			<table cellpadding=0 cellspacing=0 class='usb_devopt'>
+				<tr>
+					<th>分区</th>
+					<th>分区大小</th>
+					<th></th>
+				</tr>
+				<%for _,v in pairs(devs) do
+					tmp=Split(v,"///")
+					if not tonumber(tmp[2]) then
+						tmp[2] = 0
+					end
+
+					size=math.floor(tmp[2]/1024*10)
+					size=size/10
+					%>
+					<tr>
+						<td><%=tmp[1]%></td>
+						<td><%=size%>G</td>
+						<%if tmp[1]==mountdev then%>
+						<td rel='1'><a href='javascript:void(0)' style='display:none' class='app_opt_btn_right usb_obt_n' rel='<%=tmp[1]%>'><b>设为主分区</b></a><span>主分区</span></td>
+						<% else %>
+						<td><a href='javascript:void(0)' class='app_opt_btn_right usb_obt_n' rel='<%=tmp[1]%>'><b>设为主分区</b></a></td>						
+						<% end %>
+					</tr>
+				<%end%>							
+			</table>
+		</div>
+		<div class='usb_devfooter'>
+			<p>设为主分区后，该分区将作为小云数据传输的如意云路由端数据源</p>
+		</div>
+	</div>
+	<% end %>
+</div>
+<script type='text/javascript'>
+			$('.usb_devopt tr').hover(function(){
+				var ob = $(this).children('td:eq(2)');
+				if (ob.attr('rel') != '1' && $('.usb_devadd h4').attr('rel') == '0')
+					ob.children('a').show();
+			},function(){
+				var ob = $(this).children('td:eq(2)');
+				//$(this).children('td:eq(2)').children('a').hide();
+				if (ob.attr('rel') != '1')
+					ob.children('a').hide();
+			})
+</script>

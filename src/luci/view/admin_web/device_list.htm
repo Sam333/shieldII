@@ -1,0 +1,346 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="format-detection" content="telephone=no">
+
+<title>Sheild</title>
+
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/style.css" type="text/css">
+<script type="text/JavaScript" src="<%=resource%>/turbo/web/js/curvycorners.src.js"></script><!-- 圆角兼容 -->
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery-1.8.1.min.js"></script>
+<link rel="stylesheet" href="<%=resource%>/turbo/web/js/artDialog/skins/blueskin.css">
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/artDialog/jquery.artDialog.js?skin=blueskin"></script>
+<script src="<%=resource%>/turbo/web/js/artDialog/plugins/iframeTools.source.js"></script>
+<style type="text/css">
+.qos_smart{
+	background: url(<%=resource%>/turbo/web/images/plus_smartqos.png) no-repeat 10px 15px;
+	padding-left:10px;
+	background-color: #fafafa;
+	height:39px;
+}
+
+.qos_smart .tr{
+	padding: 13px 0px 0 35px;
+}
+
+.qos_ipt{
+	width:30px;
+}
+
+.trf_{
+	background-color: #fafafa;
+	padding: 3px;
+}
+
+.no_limit{
+	background-color: #fafafa;
+	height:30px;
+	text-align:center;
+	padding: 17px 0px 0;
+}
+
+.trf_e {
+	background-color: #ffa;
+}
+
+#set_qos_up, #set_qos_down{width:40px;}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="title">
+	<h2>已连接设备列表   | <a href="javascript:location.reload();">刷新</a> <i></i></h2>
+</div>
+<div class="routers">
+	<p class="tips">
+		<a href="javascript:void();" onclick="window.parent.open_windows('set_wifi');">设置无线密码</a> | <a href="javascript:void();" onclick="window.parent.open_windows('mac_filter');">设置MAC限制</a> 
+	</p>
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="routers-table" id="device_list">
+		<tbody>
+			<tr>
+				<th class="signal" scope="col" style="width:25px">方式</th>
+		    	<th class="mac" scope="col" style="width:105px">MAC地址</th>
+		    	<th class="ip" scope="col" style="width:100px">IP</th>
+		    	<th class="name" scope="col" width="*">设备名称</th>
+		    	<th class="trf" scope="col" style="width:85px">流量</th>
+		    	<th class="trf" scope="col" style="width:85px">限速</th>
+		    	<th class="signal" scope="col" style="width:60px">强制断开</th>
+	    	</tr>
+	    	<tr class="cbi-section-table-row">
+				<td colspan="4"><em><br /><%:Collecting data...%></em></td>
+			</tr>
+	    </tbody>
+	</table>
+</div>
+<script type="text/javascript">
+var set_qos_up;
+var set_qos_down;
+
+function get_qos_html(show,up,down){
+	var dis_html = "";
+	if (!show){
+		dis_html = 'style="display:none;"';
+	}
+	return '<div class="trf_ qos_show_box" '+dis_html+'>'+
+		   '<div class="tr"><a href="javascript:void();" class="set_qos"><span class="qos_up_">'+up+' </span> KB/S<br><span class="qos_down_">'+down+' </span> KB/S</a></div>'+'</div>'
+}
+
+function get_no_qos_html(show){
+	var dis_html = "";
+	if (!show){
+		dis_html = 'style="display:none;"';
+	}
+	
+	return '<div class="trf_ no_limit" '+dis_html+'><div class="tr"><a href="javascript:void();" class="set_qos">无限制 </a></div></div>';
+	
+}
+
+function set_qos_showbox(mac,isset,up,down){
+	mac = mac.replace(/[\s\:]+/g,"");
+	
+	if (isset){
+		$("#"+mac).parent().find(".qos_up_").html(up);
+		$("#"+mac).parent().find(".qos_down_").html(down);
+		$("#"+mac).parent().find(".qos_show_box").show();
+		$("#"+mac).parent().find(".qos_smart").hide();
+		$("#"+mac).parent().find(".no_limit").hide();
+	} else {
+		$("#"+mac).parent().find(".qos_up_").html("");
+		$("#"+mac).parent().find(".qos_down_").html("");
+		$("#"+mac).parent().find(".qos_show_box").hide();
+		$("#"+mac).parent().find(".qos_smart").show();
+		$("#"+mac).parent().find(".no_limit").show();
+	}
+}
+
+function qos_window(set_btn_obj){
+	var mac_now = set_btn_obj.parent().parent().parent().parent().find(".mac").html();
+	var name_now = set_btn_obj.parent().parent().parent().parent().find(".name_n").html();
+	var set_qos_up = $.trim(set_btn_obj.parent().parent().parent().parent().find(".qos_up_").html());
+	var set_qos_down = $.trim(set_btn_obj.parent().parent().parent().parent().find(".qos_down_").html());
+	if (set_qos_up == "") {set_qos_up = 50;}
+	if (set_qos_down == "") {set_qos_down = 100;}
+	
+	art.dialog({
+		title:false,
+		content: '给 <b>'+name_now+'</b><span style="color:#aaaaaa;"> ('+mac_now+')</span> 限速<br><br>上行: <input id="set_qos_up" value="'+set_qos_up+'"> KB/S <br> 下行: <input id="set_qos_down" value="'+set_qos_down+'"> KB/S',
+	    id: "qos_box",
+	    button: [
+	             {
+	                 name: '保存',
+	                 callback: function () {
+	                	//network/set_qos 
+	                	var al_box = this;
+	                	set_qos_up = $("#set_qos_up").val();
+						set_qos_down = $("#set_qos_down").val();
+                		var request_date = {"mac":mac_now,"up":set_qos_up,"down":set_qos_down,"name":name_now}; 
+                		$.getJSON("/cgi-bin/turbo/;stok=fb9c133ca28f1aa0c95970ba5e007e40/api/network/set_qos",request_date,function(rsp) 
+                		{ 
+                			if(rsp.code == 0){
+                				set_qos_showbox(mac_now,true,set_qos_up,set_qos_down);
+                				al_box.close();
+         						return false;
+                			} else {
+                				art.dialog({icon:"error",title:false,content:rsp.msg}).lock().time(1);
+         						return false;
+                			}
+                		})
+	                    return false;
+	                 },
+	                 focus: true
+	             },
+	             {
+	                 name: '取消限速',
+	                 callback: function () {
+	                	var al_box = this;
+	                 	var request_date = {"mac":mac_now,"up":-1,"down":-1}; 
+	         			$.getJSON("/cgi-bin/turbo/;stok=fb9c133ca28f1aa0c95970ba5e007e40/api/network/set_qos",request_date,function(rsp) 
+	         			{ 
+	         				if(rsp.code == 0){
+	         					set_qos_showbox(mac_now,false);
+	         					al_box.close();
+         						return false;
+	         				} else {
+	         					art.dialog({icon:"error",title:false,content:rsp.msg}).lock().time(4);
+         						return false;
+	         				}
+	         			})
+						return false;
+	                 },
+	                 focus: false
+	             },
+	             {
+	                 name: '关闭',
+	                 callback: function () {
+	                	this.close();
+	         	        return false;
+	                 },
+	                 focus: false
+	             }
+	            ]
+	}).lock();
+}
+
+$(function(){
+	
+	//$.ajaxSettings.async = false;
+	
+	//本机 mac 地址
+	var mac_local = "00:30:18:a8:a5:33".toUpperCase();
+	
+	//取最后一个
+	var request_date = {}; 
+	//wifi/get_connected_devices_list get_connected_devices dhcplease_status
+	$.getJSON("<%=controller%>/admin/network/get_connected_devices", null, function(rsp){ 
+		var d_mac;
+		var d_signal;
+		var d_ip;
+		var d_type;
+		var d_name;
+		var d_html = "";
+		var d_signal_level = 3;
+		var d_up_ps_str = "0 K";
+		var d_down_ps_str = "0 KB";
+		var d_up_ps = 0;
+		var d_down_ps = 0;
+		var d_qos_up;
+		var d_qos_down;
+		var t_mac;
+
+		var dhcp4 = rsp[0];
+		var dhcp6 = rsp[1];
+
+		console.log(rsp)
+
+		if(dhcp4){
+			var ls = document.getElementById('device_list');
+			if (ls)
+			{
+				while( ls.rows.length > 1 )
+					ls.rows[0].parentNode.deleteRow(1);
+
+				for( var i = 0; i < dhcp4.length; i++ )
+				{
+					console.log(dhcp4[i])
+
+					var tr = ls.rows[0].parentNode.insertRow(-1);
+						tr.className = 'cbi-section-table-row cbi-rowstyle-' + ((i % 2) + 1);
+
+					tr.insertCell(-1).innerHTML = "lan";
+					tr.insertCell(-1).innerHTML = dhcp4[i].macaddr;
+					tr.insertCell(-1).innerHTML = dhcp4[i].ipaddr;
+					tr.insertCell(-1).innerHTML = dhcp4[i].hostname ? dhcp4[i].hostname : '?' ;
+					/*tr.insertCell(-1).innerHTML = ""
+					tr.insertCell(-1).innerHTML = '<a href="javascript:void();" class="set_qos">限速</a>'
+					tr.insertCell(-1).innerHTML = '<a href="javascript:void();" class="kick_this">强制断开</a>'*/
+				}
+
+				if( ls.rows.length == 1 )
+				{
+					var tr = ls.rows[0].parentNode.insertRow(-1);
+						tr.className = 'cbi-section-table-row';
+
+					var td = tr.insertCell(-1);
+						td.colSpan = 4;
+						td.innerHTML = '<em><br /><%:There are no active leases.%></em>';
+				}
+			}
+		}
+
+		$(".set_qos").click(function(){
+			qos_window($(this));
+		})
+		
+		$(".kick_this").click(function(){
+			var mac_now = $(this).parent().parent().find(".mac").html();
+			var html_now = $(this).parent().parent();
+			var name_now = $(this).parent().parent().find(".name_n").html();
+			var is_local_html="";
+			var name_now = $(this).parent().parent().find(".name_n").html();
+			if (mac_now == mac_local) {
+				is_local_html = "<span style='color:red'> (本机) </span>";
+			} 
+			var info_alert = '<b>'+ name_now + is_local_html + '</b> 将被路由器屏蔽。如需解除屏蔽，点击下方 "恢复被断开的设备" 按钮，或在路由器后台关闭 mac 地址限制。';
+			art.dialog({
+			    title: false,
+			    content: info_alert,
+			    icon: 'warning',
+			    ok: function(){
+					
+					//wifi/set_mac_filter 
+					var request_date =  {"mac":mac_now};
+					$.getJSON("/cgi-bin/turbo/;stok=fb9c133ca28f1aa0c95970ba5e007e40/api/network/kick_device",request_date,function(rsp) 
+					{
+						if(rsp.code == 0){
+							window.parent.art.dialog({icon:"succeed",title:false,content:"断开成功."}).lock().time(4);
+							html_now.html("");
+						} else {
+							window.parent.art.dialog({icon:"error",title:false,content:rsp.msg}).lock().time(4);
+						}
+					})
+			    },
+			    okVal: "确认断开", 
+			    cancel: function(){
+			        this.close();
+			        return false;
+			    }
+			}).lock();
+		})
+		
+		$(".kick_cancel").click(function(){
+			//wifi/set_mac_filter 
+			var request_date =  {"status":"stop", 
+								 "device":"radio0.network1"};
+
+			$.getJSON("/cgi-bin/turbo/;stok=fb9c133ca28f1aa0c95970ba5e007e40/api/wifi/set_mac_filter",request_date,function(rsp) 
+			{
+				if(rsp.code == 0){
+					window.parent.art.dialog({icon:"succeed",title:false,content:"解除成功，设备可重新连接."}).lock().time(4);
+				} else {
+					window.parent.art.dialog({icon:"error",title:false,content:rsp.msg}).lock().time(4);
+				}				
+			})
+		})
+	})
+});
+
+function update_traffic(){
+	$.getJSON("/cgi-bin/turbo/;stok=fb9c133ca28f1aa0c95970ba5e007e40/api/network/get_traffic_mac_hash",{},function(rsp)
+	{
+		var traffic_mac_hash = rsp.traffic_mac_hash;
+		for(var k in traffic_mac_hash){
+			var d_mac = k.toUpperCase();
+			var d_down = traffic_mac_hash[k].down;
+			var d_up = traffic_mac_hash[k].up;
+			$(".mac:contains('"+d_mac+"')").parent().find(".up_").html(kb_format(d_up));
+			$(".mac:contains('"+d_mac+"')").parent().find(".down_").html(kb_format(d_down));
+		}
+		
+		$("#total_up").html(kb_format(rsp.total_up));
+		$("#total_down").html(kb_format(rsp.total_down));
+		setTimeout("update_traffic()",2000);
+	})
+}
+
+function kb_format(kb){
+	var r = "0";
+	if (kb>1024){
+		kb  = Math.round(kb/1024*10)/10;
+		r = kb.toString()+" MB";
+	} else {
+		r = kb.toString()+" KB";
+	}
+	
+	return r
+}
+</script>
+
+
+<div style="display: none; position: fixed; left: 0px; top: 0px; width: 100%; height: 100%; cursor: move; opacity: 0; background-color: rgb(255, 255, 255); background-position: initial initial; background-repeat: initial initial;"></div>
+
+</body>
+</html>

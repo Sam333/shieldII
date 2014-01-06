@@ -1,0 +1,194 @@
+<%-
+	require "luci.template"
+	require 'luci.sys'
+	--检查无线连接状态
+	local uci = require "luci.model.uci".cursor()
+	local ntm = require "luci.model.network"
+	ntm.init(uci)
+
+	local devices  = ntm:get_wifidevs()
+	local devs
+	local netlist = {}
+
+	for _, dev in ipairs(devices) do local nets = dev:get_wifinets()
+		local nets = dev:get_wifinets()
+		for _, net in ipairs(nets) do
+			netlist[#netlist+1] = net:id()
+		end
+	end
+
+	local netmd = require "luci.model.network".init()
+	local net = netmd:get_wifinet(netlist[1])
+	local dev = net:get_device()
+
+	local wirestatus = false
+	--[[
+	if dev and net then
+		if net:get("disabled") and net:get("disabled") == 0 then
+			wirestatus = 0
+		else
+			wirestatus = 1
+		end
+	end]]--
+	if net:get('disabled') or net:get('disabled') == 1 then
+		wirestatus = false
+	else
+		wirestatus = true
+	end
+
+	-- SSID
+	local ssid = nil
+	ssid = net:get("ssid")
+
+	-- wifiSfe
+	local wireSafe = nil
+	wireSafe = net:get("encryption")
+
+	-- wiretype
+	local wiretype = nil
+	local nn = netmd:get_network("wan")
+	wiretype = nn:proto()
+
+	-- connectstatus
+	local connect_ip = nil
+	--local wan = netmd:get_wannet()
+	if netmd:get_wannet() then 
+		local wan = netmd:get_wannet()
+		connect_ip = wan:ipaddr()
+	else
+		connect_ip = "未连接"
+	end
+
+	--- pppoe 账户
+	local pppoename = nil
+	if uci.get('network','wan','username') then
+		pppoename = uci.get('network','wan','username')
+	end
+	--- pppoe密码
+	local pppoepwd = nil
+	if uci.get('network','wan','password') then 
+		pppoepwd  =  uci.get('network','wan','password')
+	end
+	
+
+	-- 获取当前内网连接方式
+	local lan_connect = uci.get('network','lan','proto')
+	local show_lan_connect = nil
+	local show_lan_ip = uci.get('network','lan','ipaddr') or '自动'
+	local show_gateway = uci.get('network','lan','gateway') or '自动'
+	local show_dns = uci.get('network','lan','dns') or '自动'
+
+	if lan_connect == 'static' then
+		show_lan_connect = '静态IP'
+	elseif lan_connect == 'dhcp' then
+		show_lan_connect = '动态IP'
+	elseif lan_connect == 'none' then
+		show_lan_connect = '无'
+	elseif lan_connect == 'ppp' then
+		show_lan_connect = 'ppp方式'
+	elseif lan_connect == 'pptp' then
+		show_lan_connect = 'pptp方式'
+	elseif lan_connect == 'pppoe' then
+		show_lan_connect = 'pppoe拨号'
+	elseif lan_connect == 'pppoa' then
+		show_lan_connect = 'pppoa方式'
+	elseif lan_connect == '3g' then
+		show_lan_connect = '3g网络'
+	elseif lan_connect == '12tp' then
+		show_lan_connect = '12tp方式'
+	else
+		show_lan_connect = '未知'
+	end
+	
+	-- 获取USB状态
+	function Split(szFullString, szSeparator)  
+		local nFindStartIndex = 1  
+		local nSplitIndex = 1  
+		local nSplitArray = {}  
+		while true do  
+		   local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)  
+		   if not nFindLastIndex then  
+		    nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))  
+		    break  
+		   end  
+		   nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)  
+		   nFindStartIndex = nFindLastIndex + string.len(szSeparator)  
+		   nSplitIndex = nSplitIndex + 1  
+		end  
+		return nSplitArray  
+	end				
+
+	local usbstaus = luci.sys.exec('/usr/local/localshell/usbdevice')
+
+	local len=string.len(usbstaus)
+	local usbmount=""
+	local tmp=""
+	if len==5 then
+		usbmount="未挂载"
+	else
+		tmp=Split(usbstaus,'/////')
+		if tmp[3] ~= "NULL" then
+			usbmount="已挂载"
+		else
+			usbmount="未挂载"
+		end
+	end
+-%>
+
+<div class='firmware'>
+	<h3>固件</h3>
+	<p><span>固件版本：</span><%=pcdata(luci.version.xcloud_show)%><a class='status_btn firmware1' id='firmware' href='javascript:void(0)' style='border-left:none;'><b class='pop_tag'><span>设置</span></b></a></p>
+	<script type='text/javascript'>
+		getVersion('<%=pcdata(luci.version.xcloud_update)%>');
+	</script>
+</div>
+<div class='wifi'>
+	<h3>外网连接</h3>
+	<p>
+		<% if netmd:get_wannet() then%>
+		<span>连接状态：</span>已连接<a class='status_btn' id='wifi' href="javascript:void(0)"><b class='pop_tag'><span>设置</span></b></a>
+		<% else %>
+		<span>连接状态：</span>未连接<a class='status_btn' id='wifi' href="javascript:void(0)"><b class='pop_tag'><span>设置</span></b></a>
+		<% end%>
+	</p>
+	<p>
+		<span>连接方式：</span>
+		<% if wiretype == 'dhcp' then%>
+		动态IP
+		<% elseif wiretype == 'static' then %>
+		静态IP
+		<% elseif wiretype == 'pppoe' then%>
+		PPPoe
+		<% else %>
+		<%=wiretype%>
+		<% end %>
+	</p>
+</div>
+<div class='lan'>
+	<h3>内网连接</h3>
+	<p><span>IP获取方式：</span><%=show_lan_connect%><a class='status_btn' id='lan' href='javascript:void(0)'><b class='pop_tag'><span>设置</span></b></a></p>
+	<p><span>内网IP：</span><%=show_lan_ip%></p>
+	<p><span>网关：</span><%=show_gateway%></p>
+	<p><span>DNS：</span><%=show_dns%></p>
+</div>
+<div class='wifinfo'>
+	<h3>WIFI信息</h3>
+	<p><span>SSID：</span><%=ssid%><a class='status_btn' id='wifinfo' href='javascript:void(0)'><b class='pop_tag'><span>设置</span></b></a></p>
+	<% if wireSafe ~= "none" then%>
+	<p><span>无线加密：</span>开启</p>
+	<% else %>
+	<p><span>无线加密：</span>未开启</p>
+	<% end %>
+</div>
+<div class='usbinfo'>
+	<h3>USB状态</h3>
+	<p><span>挂载状态：</span><span id='setusb'><%=usbmount%></span><a class='status_btn' style='border-top:none;' id='usbinfo' href='javascript:void(0)'><b class='pop_tag'><span>设置</span></b></a></p>
+</div>
+
+<script type='text/javascript'>
+	$('.status_btn').hover(function(){
+		$(this).children('b').css('display','block');
+	},function(){
+		$(this).children('b').css('display','none');
+	})
+</script>

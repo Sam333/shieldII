@@ -1,0 +1,200 @@
+<%
+	require "luci.sys"
+
+	require "luci.sys";
+	require "luci.dispatcher"
+	
+	local appsetup = luci.sys.exec('/usr/local/app/ReadInstallPlugin BASE')
+
+	function Split(szFullString, szSeparator)  
+		local nFindStartIndex = 1  
+		local nSplitIndex = 1  
+		local nSplitArray = {}  
+		while true do  
+		   local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)  
+		   if not nFindLastIndex then  
+		    nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))  
+		    break  
+		   end  
+		   nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)  
+		   nFindStartIndex = nFindLastIndex + string.len(szSeparator)  
+		   nSplitIndex = nSplitIndex + 1  
+		end  
+		return nSplitArray  
+	end
+
+	local applength = string.len(appsetup)
+
+	local appsetupdata = {}
+
+	if applength ~= 3 then
+		appsetupdata = Split(appsetup,"////")
+	end	
+
+	local hasinstall = ""
+	local tmp = {}
+
+	local count = #appsetupdata
+	
+	for i,v in pairs (appsetupdata) do
+		tmp = Split(v,",")
+		if (i ~= count) then
+			hasinstall = hasinstall .. tmp[1] .. "_".. tmp[3] .. "|||"
+		else
+			hasinstall = hasinstall .. tmp[1] .. "_".. tmp[3]
+		end
+	end	
+%>
+<div class='app_part part2'>
+	<ul>
+		<!--
+		<li>
+			<span class='app_opt_title'>小云</span>
+			<span class='app_opt_size'>256K</span>
+			<div class='app_opt_btn'>
+				<a href='javascript:void(0)' class='subbtn appbtn'><b>安装</b></a>
+			</div>
+			<div class='clr'></div>
+		</li>-->
+		<script type='text/javascript'>
+			var o = "<%=hasinstall%>";
+
+			$.getJSON("http://r.xcloud.cc/router/index.php?m=Index&a=checkStatus&callback=?",{ids:o,type:'2',nicon:"1"},function(json){
+				str = eval(json);
+
+				n = str.length;
+
+				var tmp = "";
+				var tmpstr = "";
+
+				for (var i=0;i<n;i++)
+				{		
+					if (json[i].online == 0){
+						tmpstr = "<span class='appstr'>即将上线</span>";
+					}else{
+						tmpstr = "<a href='javascript:void(0)' class='subbtn appbtn' rel='"+json[i].appid+"'><b>安装</b></a><span class='appstr installing'>安装中...</span>";
+					}
+
+					tmp = "<li><img class='app_opt_img' src='"+json[i].icon+"'><span class='app_opt_title'>"+json[i].name+"</span><span class='app_opt_size'>"+json[i].size+"</span><div class='app_opt_btn'>"+tmpstr+"</div><div class='clr'></div></li>";
+
+					$('.part2 ul').append(tmp);
+				}
+			});
+		</script>		
+	</ul>
+</div>
+<div class='appstore'>
+	<%
+		local insize = luci.sys.exec('/usr/local/app/GetFreeDisk rom')
+		local outsize = luci.sys.exec('/usr/local/app/GetFreeDisk usb')
+
+		local tmp1 = "未插入设备"
+		local appdes = 0
+
+		if string.len(outsize) ~= 25 then	
+			local tmp2=Split(outsize,",")
+			tmp1=tmp2[1]
+		else
+			appdes = 1;
+		end
+	%>
+	<p>可用空间：内置&nbsp;<span class='appstorein'><%=insize%></span>&nbsp;&nbsp;
+		外置&nbsp;<span p='<%=appdes%>' class='appstoreout'><%=tmp1%></span>&nbsp;&nbsp;<span class='appstorespace'></span>
+	</p>
+	<h4>手动载入镜像</h4>
+	<form id='upload_plugins' action='<%=pcdata(luci.dispatcher.build_url("admin/xcloud/appsetup/appupload"))%>' method='post' enctype="multipart/form-data">
+		<input type='file' name='installplug' class='installplug'>
+		<div class='clr'></div>
+	</form>
+	<a href='javascript:void(0)' class='subbtn hands'><b>安装</b></a>
+	<span class='installresult'><b></b></span>
+</div>
+
+<script type='text/javascript'>
+	//alert($('.appstore').length);
+	function startInstall(){
+		//alert(2342342);
+		$('.installresult b').stop().html('安装中').fadeIn(1000).fadeOut(2000);
+		$.ajax({
+			url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/appsetup/startinstall"))%>',
+			data:{type:'2'},
+			dataType:'json',
+			method:'post',
+			timeout:50000,
+			success:function(r){
+				var tmp = r.result;
+				var o = tmp.split("\n");
+				var tmp1 = o[o.length-2];
+				//alert(tmp1.length);
+				if (tmp1.length == 7)
+					$('.installresult b').stop().html('安装完成').fadeIn(1000).fadeOut(2000);
+				else
+					$('.installresult b').stop().html('安装失败').fadeIn(1000).fadeOut(2000);
+/*
+				if(r.result == 'success'){
+					$('.installresult b').stop().html('安装完成').fadeIn(1000).fadeOut(2000);
+				}*/
+			}
+		})		
+	}
+
+	$('.hands').live('click',function(){
+		var inputstr = $('.installplug').val();
+
+		if(inputstr.length == 0){
+			$('.installresult b').stop().html('您还未选择文件').fadeIn(1000).fadeOut(2000);
+			return false;
+		}
+
+		$('#upload_plugins').ajaxSubmit({
+			type:"post",
+			url:$('.upload_plugins').attr('action'),
+			dataType:"html",
+			success:function(r){
+				if (r == 'success')
+					startInstall();
+				else
+					$('.installresult b').stop().html('安装失败').fadeIn(1000).fadeOut(2000);
+			},
+			error:function(){
+				$('.installresult b').stop().html('安装失败').fadeIn(1000).fadeOut(2000);
+			}
+		});
+	})
+
+	$('.appbtn').live('click',function(){
+		var path = $(this).attr('rel');
+		//var o = $(this).parent().parent();
+		//var o1 = $(this);
+		if ( $('.appstoreout').attr('p') == 1 ){
+			$('.appstorespace').html('提示：空间不足').stop().fadeIn(1000).fadeOut(3000);
+			return false;
+		}else{
+			$('.appstorespace').html('');
+		}
+
+		$(this).css('display','none');
+
+		var o = $(this).next();
+		$(this).next().css('display','block');
+
+		$.ajax({
+			url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/appsetup/startinstall"))%>',
+			data:{type:'1',dir:path},
+			dataType:'json',  
+			method:'post',
+			timeout:50000,
+			success:function(r){
+				var tmp = r.result;
+				var o1 = tmp.split("\n");
+				var tmp1 = o1[o1.length-2];
+				if(tmp1.length == 7){
+					o.html('安装完成');
+					//alert(r.result);
+				}else{
+					o.html('安装失败');
+				}
+			}
+		})
+	})
+</script>

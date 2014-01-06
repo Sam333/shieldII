@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="format-detection" content="telephone=no" />
+<title>HiWiFi 路由器</title>
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/style.css?v=1015" type="text/css"/>
+<script type="text/JavaScript" src="<%=resource%>/turbo/web/js/curvycorners.src.js"></script><!-- 圆角兼容 -->
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery-1.8.1.min.js"></script>
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/artDialog/jquery.artDialog.js?skin=blueskin"></script>
+<script src="<%=resource%>/turbo/web/js/artDialog/plugins/iframeTools.source.js"></script>
+</head>
+
+<style type="text/css">
+	table.zone td.tor{
+		text-align: right;
+		width:120px;
+		line-height:14px;
+	}
+</style>
+<body>
+<div >
+	<form id="form1"> 
+	<ul class="ullist">
+	<li>
+		<div class="memu row">
+		
+		
+			<p><label>LCP请求发送间隔 </label><input type="text" name="lcp_failure_threshol" value="" width="50" style="width:50px;margin-left: 130px;" class="txt" autocomplete="off">秒(s) <a href="javascript:void()" id="go_defult">设为默认值</a></p>
+			<div class="ps">
+				(默认值为 0, 表示不发送请求)<br />
+				当前WAN口连接方式不是 "PPPoE" 不能设置此项，你可以  <a href="javascript:void();" onclick="window.parent.open_windows('set_network');">外网设置</a>
+			</div>
+		</div>
+	</li>
+
+	<li>
+		<div class="btnbox" style="padding-left:60px;">
+			<input type="button" value="保存" class="btn" style="margin-left: 30px;" id="submit_btn" disabled="disabled">
+			<img style="display:none;" id="loading2" src="<%=resource%>/turbo/web/js/artDialog/skins/icons/loading.gif" alt="HiWiFi 路由器">
+		</div>
+	</li>
+	</ul>
+	</form>
+</div>
+<script type="text/javascript">
+$(function(){
+	//network/get_wan_info 
+	var request_date = {}; 
+	
+	$("#go_defult").click(function(){
+		$("input[name='lcp_failure_threshol']").val(0);
+	})
+	
+	//network/get_ppp_keepalive 
+	var request_date = {}; 
+	var request_date =  $("#form1").serializeArray(); 
+	$.getJSON("/cgi-bin/turbo/;stok=c8e8b5f039d8c34871f5d1f406716066/api/network/get_ppp_keepalive",request_date,function(rsp) 
+	{ 
+		
+		if(rsp.code == 0){
+			$("input[name='lcp_failure_threshol']").val(rsp.lcp_failure_threshol);
+			
+				$("input[name='lcp_failure_threshol']").attr("disabled",true);
+			
+		}
+	})
+	
+	//提交
+	$("#submit_btn").click(function(){
+
+		$("#loading2").show();
+		$("#submit_btn").attr("disabled",true);
+		
+		//network/set_wan_mtu 
+		var request_date =  $("#form1").serializeArray(); 
+		$.getJSON("/cgi-bin/turbo/;stok=c8e8b5f039d8c34871f5d1f406716066/api/network/set_ppp_keepalive",request_date,function(rsp) 
+		{ 
+			if(rsp.code == 0){
+				window.parent.art.dialog({icon:"succeed",title:false,content:"修改成功！"}).lock().time(4);
+				//window.parent.art.dialog.list['func_box'].close();
+			} else {
+				art.dialog({icon:"error",title:false,content:rsp.msg}).lock().time(4);
+			}
+			$("#loading2").hide();
+			$("#submit_btn").attr("disabled",false);
+		})
+	})
+	
+})
+
+</script>
+</body>
+</html>
+

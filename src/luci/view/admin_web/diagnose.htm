@@ -1,0 +1,131 @@
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="format-detection" content="telephone=no">
+<title>HiWiFi 路由器</title>
+<link rel="stylesheet" href="<%=resource%>/turbo/web/css/style.css?v=1015" type="text/css">
+<link rel="stylesheet" href="http://192.168.199.1<%=resource%>/turbo/web/js/artDialog/skins/blue.css">
+<script type="text/JavaScript" src="<%=resource%>/turbo/web/js/curvycorners.src.js"></script><!-- 圆角兼容 -->
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/jquery-1.8.1.min.js"></script>
+<script type="text/javascript" src="<%=resource%>/turbo/web/js/artDialog/jquery.artDialog.js?skin=blueskin"></script>
+<script src="<%=resource%>/turbo/web/js/artDialog/plugins/iframeTools.source.js"></script>
+</head>
+<body><div class="" style="display: none; position: absolute;"><div class="aui_outer"><table class="aui_border"><tbody><tr><td class="aui_nw"></td><td class="aui_n"></td><td class="aui_ne"></td></tr><tr><td class="aui_w"></td><td class="aui_c"><div class="aui_inner"><table class="aui_dialog"><tbody><tr><td colspan="2" class="aui_header"><div class="aui_titleBar"><div class="aui_title" style="cursor: move; display: block;"></div><a class="aui_close" href="javascript:/*artDialog*/;">×</a></div></td></tr><tr><td class="aui_icon" style="display: none;"><div class="aui_iconBg" style="background-image: none; background-position: initial initial; background-repeat: initial initial;"></div></td><td class="aui_main" style="width: auto; height: auto;"><div class="aui_content" style="padding: 20px 25px;"></div></td></tr><tr><td colspan="2" class="aui_footer"><div class="aui_buttons" style="display: none;"></div></td></tr></tbody></table></div></td><td class="aui_e"></td></tr><tr><td class="aui_sw"></td><td class="aui_s"></td><td class="aui_se" style="cursor: se-resize;"></td></tr></tbody></table></div></div>
+
+
+<div>
+	<div class="memu row" style="padding-left: 50px;">
+		<p><label>存储状态</label><span style="margin-left:100px;">正常</span>
+		
+		</p>
+	</div>
+	<br>
+	<div class="memu row" style="padding-left: 50px;">
+		<p><label>路由器模式</label><select name="mode" class="txt slt">
+			<option value="hiwifi">极路由智能模式</option>
+			<option value="normal">普通路由模式</option>
+		</select>
+		<input type="hidden" name="old_mode" value="hiwifi">
+		<input type="button" value="保存" class="btn" id="submit_btn">
+		<img style="display:none;" id="loading2" src="<%=resource%>/turbo/web/js/artDialog/skins/icons/loading.gif" alt="HiWiFi 路由器">
+		</p>
+		<div class="ps">
+			本页仅客服和用户确认问题使用，用户无需自行设置。<br>
+			(如果出现兼容性问题，可以手动设置为“普通路由器模式”，然后与客服联系。)
+		</div>
+	</div>
+	<br>
+	<br>
+	<div class="memu row" style="padding-left: 50px;">
+		<p><label>允许远程调试</label>
+		<span style="margin-left:100px;"><input name="remote_script" type="checkbox" value="1">&nbsp;&nbsp;&nbsp;<input type="button" value="保存" class="btn" id="submit_btn_debug"></span>
+		</p>
+	</div>
+</div>
+<script type="text/javascript">
+$(function(){	
+	$("#reset_btn").click(function(){
+		art.dialog({
+			title:false,
+		    content: '是否执行格式化并重启，重启将断开和路由器的连接！',
+		    icon: 'warning',
+		    id: "wating_box",
+		    ok: function(){
+		    	
+		    	this.close();
+		    	//system/format_disk 
+				var request_date = {}; 
+				$.getJSON("/cgi-bin/turbo/;stok=ca3e7a9a68b4eaeda5d394fc23f579c1/api/system/format_disk",request_date,function(rsp) 
+				{ 
+					if(rsp.code == 0){
+						window.parent.global_dorestart('格式化存储，重启路由器'); 
+						window.parent.art.dialog.list['func_box'].close();
+					}  
+				})
+
+		        return false;
+		    },
+		    okVal: "现在格式化", 
+		    cancel: function(){
+		        this.close();
+		        return false;
+		    }
+		}).lock();
+	})
+	
+	//system/get_nginx_mode 
+	var request_date = {}; 
+	$.getJSON("/cgi-bin/turbo/;stok=ca3e7a9a68b4eaeda5d394fc23f579c1/api/system/get_nginx_mode",request_date,function(rsp) 
+	{ 
+
+		//auto fill--  
+		$("select[name='mode']").val(rsp.mode);  
+		$("input[name='old_mode']").val(rsp.mode);  
+		$("#submit_btn").attr("disabled",false);
+		
+	})
+
+	$("#submit_btn_debug").click(function(){
+		if ($("input[name='remote_script']:checked").val()){
+			var remote_script_status = 1;
+		} else {
+			var remote_script_status = 0;
+		}
+		var request_date =  {"status":remote_script_status}; 
+		$.getJSON("/cgi-bin/turbo/;stok=ca3e7a9a68b4eaeda5d394fc23f579c1/api/system/set_remote_script",request_date,function(rsp) 
+		{ 
+			if(rsp.code == 0){
+				window.parent.art.dialog({icon:"succeed",title:false,content:"设置成功."}).lock().time(4);
+			} else {
+				art.dialog({icon:"error",title:false,content:rsp.msg}).lock().time(4);
+			}
+		})
+	})
+	$("#submit_btn").click(function(){
+		//这里需要初始化
+		$("#loading2").show();
+		$("#submit_btn").attr("disabled",true);
+		if($("select[name='mode']").val() == $("input[name='old_mode']").val()){
+			window.parent.art.dialog({icon:"succeed",title:false,content:"参数没有变动."}).lock().time(4);
+			$("#loading2").hide();
+			$("#submit_btn").attr("disabled",false);
+		} else {
+			$("input[name='old_mode']").val($("select[name='mode']").val());
+			setTimeout('$("#loading2").hide();$("#submit_btn").attr("disabled",false);window.parent.art.dialog({icon:"succeed",title:false,content:"设置成功"}).lock().time(5);',2000);
+			var mode_ipt = $("select[name='mode']").val();
+			var request_date =  {"mode":mode_ipt}; 
+			$.getJSON("/cgi-bin/turbo/;stok=ca3e7a9a68b4eaeda5d394fc23f579c1/api/system/set_nginx_mode",request_date,function(rsp)
+			{ 
+				if(rsp.code != 0){
+					art.dialog({icon:"error",title:false,content:rsp.msg}).lock().time(4);
+				}
+			});
+			
+		}
+	})
+	
+})
+
+
+</script>
+
+<div style="display: none; position: fixed; left: 0px; top: 0px; width: 100%; height: 100%; cursor: move; opacity: 0; background-color: rgb(255, 255, 255); background-position: initial initial; background-repeat: initial initial;"></div></body></html>

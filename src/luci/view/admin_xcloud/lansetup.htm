@@ -1,0 +1,79 @@
+<%
+	-- mac默认地址
+	require "luci.sys"
+	require "luci.template"
+	local arptable = luci.sys.net.arptable() or {}
+	local mac={}
+	for _,v in pairs (arptable) do
+		table.insert(mac,v["HW address"])
+	end
+
+	-- 获取静态地址列表
+	local uci = require "luci.model.uci".cursor()
+
+	local dhcpdevs = {}
+
+	function checkads(s)
+		table.insert(dhcpdevs,s)
+	end
+
+	uci:foreach("dhcp","host",checkads)
+
+%>
+<div class='lan_opt'>
+	<div class='setup_head'>
+		<h4>内网设置</h4>
+		<a class='setup_return' href='javascript:void(0)'><span class='setup_return_img'></span>&nbsp;返回</a>
+		<div class='clr'></div>
+		<div class='bottom_line'>
+		</div>
+	</div>
+
+	<div class='lan_setup'>
+		<div class='lan_setup_content'>
+			<%
+				luci.template.render('admin_xcloud/lansetuppart1')
+			%>
+		</div>
+		<% if flag ~= 1 then%>
+			<div class='lan_setup_footer'>
+				<div class='lan_setup_lan'>
+					<p>内网地址</p>
+				</div>
+				<div class='lan_setup_dhcp'>
+					<p>DHCP服务</p>
+				</div>
+				<div class='lan_setup_default'>
+				</div>
+				<div class='clr'></div>
+			</div>
+		<% end %>
+	</div>
+</div>
+<script type='text/javascript'>
+	function lan_setup_change(flag){
+		$.ajax({
+			url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/lansetupselect"))%>',
+			dataType:'html',
+			data:{select:flag},
+			method:'post',
+			success:function(html){
+				$('.lan_setup_content').html(html);
+			}
+		})
+	}
+
+	$('.lan_setup_lan').live('click',function(){
+		$(this).css({'border-top':'none','background':'none'});
+		$('.lan_setup_dhcp').css({'border-top':'1px solid #CECECE','background':'#EEE'})
+	
+		lan_setup_change('static');
+	})
+
+	$('.lan_setup_dhcp').live('click',function(){
+		$(this).css({'border-top':'none','background':'none'});
+		$('.lan_setup_lan').css({'border-top':'1px solid #CECECE','background':'#EEE'})
+	
+		lan_setup_change('dhcp');
+	})
+</script>

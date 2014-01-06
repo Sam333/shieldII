@@ -1,0 +1,31 @@
+<% 
+	require "luci.template" 
+%>
+<div class='app_list_opt'>
+	<div class='setup_head'>
+		<h4>应用管理</h4>
+		<a class='setup_return' href='javascript:void(0)'><span class='setup_return_img'></span>&nbsp;返回</a>
+		<div class='clr'></div>
+		<div class='bottom_line'>
+		</div>
+	</div>
+
+	<div class='app_setup'>
+		<div class='app_list'>
+			<%
+				luci.template.render("admin_xcloud/appsetuppart1")
+			%>
+		</div>
+		<div class='app_footer lan_setup_footer'>
+			<div class="lan_setup_lan appinstall" rel='0'>
+				<p>已安装</p>
+			</div>
+			<div class="lan_setup_dhcp appuninstall" rel='0'>
+				<p>未安装</p>
+			</div>
+			<div class="lan_setup_default">
+			</div>
+			<div class="clr"></div>			
+		</div>
+	</div>
+</div>

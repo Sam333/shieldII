@@ -1,0 +1,414 @@
+<%+xc_header%>
+		<%
+			require "luci.template"
+		%>
+		<div class='apps common'>
+			<%
+				luci.template.render('admin_xcloud/appsbanner')
+			%>
+		</div>
+
+		<div class='content common'>
+			<div class='status'>
+				<h1>如意云状态</h1>
+				<div class='status_c'>
+					<%=luci.template.render("admin_xcloud/xcloudstatus")%>
+				</div>
+			</div>
+			<div class='setup'>
+				<h1>如意云配置</h1>
+				<div class='setup_c'>
+					<%=luci.template.render("admin_xcloud/setup")%>
+				</div>
+				<div class='clr'></div>
+			</div>
+			<div class='clr'></div>
+		</div>
+	<script type='text/javascript'>
+			/*
+			//alert(123);
+			var oointeral = window.setInterval(function() {
+				//alert(435345);
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/xcloudstatus"))%>',
+					method:'post',
+					dataType:'html',
+					timeout:2000,
+					success:function(html){
+						//alert(html);
+						$('.status_c').html(html);
+					},
+					error:function(){
+						window.clearInterval(oointeral);
+					}
+				})
+			}, 10000);*/
+			function updatestatus(){
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/xcloudstatus"))%>',
+					type:'POST',
+					dataType:'html',
+					success:function(html){
+						if (html != "")
+							$('.status_c').html(html);
+					}
+				})
+			}
+
+			function changePanel(flag,o){
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url())%>/admin/xcloud/'+flag,
+					type:'POST',
+					data:o,
+					dataType:'html',
+					success:function(r){
+						$('.setup_c').html(r);
+					}
+				})
+			}
+
+			$('.status_btn').live('click',function(){
+				var flag = $(this).attr('id');
+				changePanel(flag);
+			})
+
+			$('.setup_return').live('click',function(){
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/setupreturn"))%>',
+					type:'POST',
+					data:{},
+					dataType:'html',
+					success:function(r){
+						$('.setup_c').html('');
+						$('.setup_c').html(''+r);
+					}
+				})
+			})
+
+			var netipaddr = '<%=show_lan_ip%>';
+			var lanipaddrurl = '<%=pcdata(luci.dispatcher.build_url("admin/xcloud/lanipaddrsetup"))%>';
+			var landhcpurl = '<%=pcdata(luci.dispatcher.build_url("admin/xcloud/lansetup2dhcp"))%>';
+		
+			/**********/
+
+			function appsetup_change(flag,obj){
+				//alert(flag);
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/appsetupselect"))%>',
+					dataType:'html',
+					data:{choose:flag},
+					type:'post',
+					success:function(html){
+						$('.app_list').html(html);
+						obj.attr('rel','0');
+					}
+				})
+			}	
+
+			$('.appinstall').live('click',function(){
+				if ($(this).attr('rel') == '1')
+					return false;
+				$(this).attr('rel','1');
+				var o = $(this);
+
+				$(this).css({'border-top':'none','background':'none'});
+				$('.lan_setup_dhcp').css({'border-top':'1px solid #CECECE','background':'#EEE'})
+			
+				appsetup_change('install',o);
+			})
+
+			$('.appuninstall').live('click',function(){
+				if ($(this).attr('rel') == '1')
+					return false;
+				$(this).attr('rel','1');
+				var o = $(this);
+
+				$(this).css({'border-top':'none','background':'none'});
+				$('.lan_setup_lan').css({'border-top':'1px solid #CECECE','background':'#EEE'})
+			
+				appsetup_change('notinstall',o);
+			})
+
+			$('.uninstall').live('click',function(){
+				var unid = $(this).attr('rel');
+				var o = $(this).parent().parent();
+
+				$(this).css('display','none');
+				$(this).next().css('display','block');
+//alert(unid);
+//return false;
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/appsetup/appuninstall"))%>',
+					data:{uid:unid},
+					dataType:'json',
+					type:'post',
+					timeout:10000,
+					success:function(r){
+						var tmp = r.result;
+						var o3 = tmp.split("\n");
+						var tmp1 = o3[o3.length-2];						
+						if (tmp1.length == 7){
+							//alert(111111);
+							o.remove();
+						}else{
+							alert('卸载失败');
+						}
+					},
+					error:function(){
+						//o.remove();
+						alert('卸载失败');
+					}
+				})
+			})
+
+			$('.updateapp').live('click',function(){
+				var path = $(this).attr('rel');
+				var o = $(this);
+
+				$(this).css('display','none');
+				$(this).next().css('display','block');
+
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/appsetup/startinstall"))%>',
+					data:{type:'1',dir:path},
+					dataType:'json',
+					type:'post',
+					timeout:50000,
+					success:function(r){
+						if(r.result == 'success'){
+							$(o).next().css('display','none');
+						}
+					}
+				})
+			})
+
+			/*******usb********/
+			$('.usb_obt_n').live('click',function(){
+				if ($('.usb_devadd h4').attr('rel') == '1'){
+					return false;
+				}
+
+				var o = $(this).parent();
+				var i = $(this).parent().parent();
+				var idx = $('.usb_devopt tr').index(i);
+				var flag = $(this).attr('rel');
+
+				$(this).css('display','none');
+				$(this).parent().attr('rel','1').append("<span>挂载中...</span>");
+				$('.usb_devadd h4').attr('rel','1');
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/usbinfo/usbaddmain"))%>',
+					data:{dev:flag},
+					dataType:'json',
+					type:'post',
+					time:50000,
+					success:function(r){
+						//alert(r.result);
+						if (r.result == 8){
+							$('.ndevhasopt').show();
+							$('.ndevremove').css('display','block');
+							$('.ndevremove').attr('rel',flag);
+							$('.usb_devadd h4').attr('rel','0');
+							o.children('span').remove();
+							o.append('<span>主分区</span>');
+
+							// 清掉非主分区的rel
+							$('.usb_devopt tr').each(function(index,obj){
+								if (index != idx){
+									$(obj).children('td:eq(2)').removeAttr('rel');
+									$(obj).children('td:eq(2)').children('span').remove();
+								}
+							})
+							updatestatus();
+						}else{
+							$('.ndevremove').attr('rel',flag);
+							$('.usb_devadd h4').attr('rel','0');
+							o.children('span').remove();
+							o.append('<span>挂载失败</span>');							
+
+							$('.usb_devopt tr').each(function(index,obj){
+								if (index != idx){
+									$(obj).children('td:eq(2)').removeAttr('rel');
+									$(obj).children('td:eq(2)').children('span').remove();
+								}
+							})
+							updatestatus();
+						}
+					},
+					error:function(){
+						changePanel('usbinfo');
+					}
+				})
+			})
+
+			$('.ndevremove').live('click',function(){
+				var flag=$(this).attr('rel');
+				$('.ndevremoving').css('display','block');
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/usbinfo/usbremovemain"))%>',
+					data:{dev:flag},
+					dataType:'json',
+					type:'post',
+					time:50000,
+					success:function(r){
+						//alert(r.result);
+						if (r.result == 8){
+							$('.ndevhasopt').hide();
+							$('.ndevremoving').css('display','none');
+							$('.ndevremove').css('display','none');
+
+							$('.usb_devopt tr').each(function(index,obj){
+								$(obj).children('td:eq(2)').removeAttr('rel');
+								$(obj).children('td:eq(2)').children('span').remove();
+							})
+							updatestatus();
+						}else{
+							$('.ndevremoving').css('display','none');
+							$('.ndevremovefailed').show();
+						
+							$('.usb_devopt tr').each(function(index,obj){
+								$(obj).children('td:eq(2)').removeAttr('rel');
+								$(obj).children('td:eq(2)').children('span').remove();
+							})
+							updatestatus();
+						}
+					}
+				})
+			})
+
+			/*******************wds**********************/
+			$('.wdsoptbegin').live('click',function(){
+				var flag = $(this).attr('id');
+				changePanel(flag);
+			})
+
+			$('.wdsconect').live('click',function(){
+				var flag 	= $(this).attr('id');
+				var parent 	= $(this).parent().parent();
+				var ssid 	= parent.children('td:eq(1)').children('div').html();
+				var bssid	= parent.children('td:eq(2)').html();
+				var singal	= parseInt(parent.children('td:eq(3)').html());
+				var chanel  = parent.children('td:eq(4)').html();
+				var encoryp	= parent.children('td:eq(5)').children('div').html();
+
+				var data = {type:'1',ss:ssid,bs:bssid,si:singal,ch:chanel,en:encoryp}
+				changePanel(flag,data);
+			})
+
+			$('.wdsreturn').live('click',function(){
+				var flag = $(this).attr('id');
+				changePanel(flag);
+			})
+
+			function wdsmention(word){
+				$('.wdsstart_mention').html(word).stop().animate({'opacity':1},1000,"",function(){
+					$('.wdsstart_mention').stop().animate({'opacity':0},3000);
+				});				
+			}
+
+			function wdsbegin(ssid,bssid,chanel,authmode,encryptype,codeval){
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/wdsstart"))%>',
+					data:{ss:ssid,bs:bssid,ch:chanel,au:authmode,en:encryptype,code:codeval},
+					dataType:'json',
+					type:'post',
+					time:50000,
+					success:function(r){
+						if (r.result == '1')
+							wdsmention('连接成功');
+						else
+							wdsmention('连接失败');
+					}
+				})
+			}
+
+			$('.wdsave').live('click',function(){
+				// get data
+				var ssid=$('#wds_ssid').val();
+				var bssid=$('#wds_bssid').val();
+				var chanel=$('.wds_chanel').val();
+				var codetype=$('.wds_code').val();
+				var codeval=$('#code_val').val();
+				var selradio=$('.wdsdhcpradio').attr('checked');
+
+				var authmode='';
+				var encryptype='';
+				var tmp = '';
+
+				if (ssid==''){
+					wdsmention('ssid为空');
+					return false;
+				}
+
+				if (bssid==''){
+					wdsmention('bssid为空');
+					return false;	
+				}
+
+				if (codetype!='OPEN/NONE'){
+					if (codeval == ''){
+						wdsmention('请输入密码');
+						return false;
+					}
+				}
+
+				if (!selradio){
+					wdsmention('中继模式下启用DHCP服务器将导致无法上网');
+					return false;	
+				}
+				
+
+				tmp = codetype.split("/");
+				authmode = tmp[0];
+				encryptype = tmp[1];
+
+				wdsmention('连接中...');
+//alert(ssid+' '+bssid+' '+chanel+' '+authmode+' '+encryptype);
+//return false;
+				$.ajax({
+					url:landhcpurl,
+					dataType:'json',
+					data:{flag:'stop'},
+					method:'post',
+					timeOut:30000,
+					success:function(r){
+						wdsbegin(ssid,bssid,chanel,authmode,encryptype,codeval);
+					},
+					error:function(o,i,j,k){
+						wdsbegin(ssid,bssid,chanel,authmode,encryptype,codeval);
+					}
+				})
+			})
+
+			$('.wdsturn').live('click',function(){
+				var flag = $(this).val();
+				
+				if (flag == 'start'){
+					$('.wdsoptturnon').show();
+					$('.wdsoptturn1').hide();
+				}else{
+					$('.wdsoptturnon').hide();
+					$('.wdsoptturn1').show();
+				}
+			})
+
+			function wdstop_mention(word){
+				$('.wdstop_mention').html(word).stop().animate({'opacity':1},1000,"",function(){
+					$('.wdstop_mention').stop().animate({'opacity':0},3000);
+				});	
+			}
+
+			$('.wdstop').live('click',function(){
+				wdstop_mention("断开连接中...")
+
+				$.ajax({
+					url:'<%=pcdata(luci.dispatcher.build_url("admin/xcloud/wdstop"))%>',
+					dataType:'json',
+					success:function(r){
+						if (r.result == 'success')
+							wdstop_mention("成功断开连接")
+					}
+				})
+			})
+	</script>
+<%+xc_footer%>
